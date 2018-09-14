@@ -1,7 +1,7 @@
+import org.jetbrains.annotations.NotNull;
+
 import java.io.*;
 import java.util.*;
-
-import javax.print.DocFlavor.STRING;
 
 public class GEDCOMreader {
 
@@ -13,7 +13,10 @@ public class GEDCOMreader {
 	public static String[] lvlOne = { "NAME", "SEX", "BIRT", "DEAT", "FAMC", "FAMS", "MARR", "HUSB", "WIFE", "CHIL",
 			"DIV" };
 	public static String[] lvlTwo = { "DATE" };
-
+	public static String[] isDate = { "BIRT", "DEAT", "MARR", "DIV"};
+	public static ArrayList<String> dateList = new ArrayList<>(Arrays.asList(isDate));
+	private static HashMap<String, HashMap<String, Object>> ind = new HashMap<>(5000);
+	private static HashMap<String, HashMap<String, Object>> fam = new HashMap<>(1000);
 	/**
 	 * Finds tag within the input string
 	 * @param input GEDCOM line that is being analyzed
@@ -103,8 +106,93 @@ public class GEDCOMreader {
 		return "N";
 	}
 
+	private static String calcAge(HashMap<String, Object> temp) {
+		String deathDate = (String) temp.get("DEAT");
+		int birthYear = Integer.parseInt(((String) temp.get("BIRT")).split(" ")[2]);
+		if (deathDate == null) {
+			return String.valueOf((2018 - birthYear));
+		} else {
+			int deathYear = Integer.parseInt(deathDate.split(" ")[2]);
+			return String.valueOf(deathYear - birthYear);
+		}
+	}
+
+	private static boolean isAlive(HashMap<String, Object> temp) {
+		String deathDate = (String) temp.get("DEAT");
+		return deathDate == null;
+	}
+
+	private static String getChildren(Object temp) {
+		if (temp == null)
+			return "";
+
+		ArrayList famList = (ArrayList) temp;
+		ArrayList children = new ArrayList();
+		String s = "";
+		for (Object famNum : famList) {
+			ArrayList childrenGot = (ArrayList) fam.get(famNum).get("CHIL");
+			children.addAll(childrenGot);
+		}
+		for (Object child : children) {
+			s += child + " ";
+		}
+		return s;
+	}
+
+	private static String getSpouse(Object temp, Object sex) {
+		if (temp == null)
+			return "";
+		ArrayList famList = (ArrayList) temp;
+		String s = "";
+		String wifeOrHus;
+		if (sex.equals("M"))
+			wifeOrHus = "WIFE";
+		else
+			wifeOrHus = "HUSB";
+
+		for (Object famNum : famList) {
+			String spouseGot = (String) fam.get(famNum).get(wifeOrHus);
+			if (spouseGot != null)
+				s += spouseGot + " ";
+		}
+
+		return s;
+	}
+
+	private static String getName(Object ID) {
+		return (String)ind.get(ID).get("NAME");
+	}
+
+
+	private static void printfTable(HashMap<String, HashMap<String, Object>> table, String type) {
+		int num = table.size();
+		HashMap<String, Object> temp;
+		String tag;
+		if (type.equals("INDI")) {
+			System.out.println(String.format("%5s %25s %6s %15s %3s %5s %15s %20s %20s", "ID", "NAME", "Gender", "Birthday", "Age", "Alive", "Death", "Child", "Spouse"));
+			for (int i = 1; i <= num; i++) {
+				tag = "I" + i;
+				temp = table.get(tag);
+				System.out.println(String.format("%5s %25s %6s %15s %3s %5s %15s %20s %20s", tag, temp.get("NAME"), temp.get("SEX"), temp.get("BIRT"), calcAge(temp), isAlive(temp), temp.get("DEAT"),getChildren(temp.get("FAMS")), getSpouse(temp.get("FAMS"),temp.get("SEX"))));
+			}
+		} else if (type.equals("FAM")) {
+			System.out.println(String.format("%5s %20s %20s %10s %20s %10s %20s %20s", "ID", "Married", "Divorced", "Husband ID", "Husband Name", "Wife ID", "Wife Name", "Children"));
+			for (int i = 1; i <= num; i++) {
+				tag = "F" + i;
+				temp = table.get(tag);
+				System.out.println(String.format("%5s %20s %20s %10s %20s %10s %20s %20s", tag, temp.get("MARR"), temp.get("DIV"), temp.get("HUSB"), getName(temp.get("HUSB")), temp.get("WIFE"), getName(temp.get("WIFE")), temp.get("CHIL")));
+			}
+		}
+
+	}
+
 	public static void main(String[] args) {
 		File fileName = new File("Kaye_Abigail_testFile.txt");
+
+		String dateType = "";
+		String ind_key = "";
+		String fam_key = "";
+		String type = "";
 		try {
 			Scanner s = new Scanner(fileName); //Scan file
 			while (s.hasNextLine()) { //Repeat until end of file
@@ -114,17 +202,71 @@ public class GEDCOMreader {
 				String argu = findArgs(input, tag);
 				String supported = isSupportedTag(lvl, tag);
 				if (tag.equals("FAM") || tag.equals("INDI")) { //Modify supported if in special format
-					if (isExceptionLineToo(input) < 2)
+					if (isExceptionLineToo(input) < 2) {
 						supported = "Y";
+					}
 				}
-				String output = "<-- " + lvl + "|" + tag + "|" + supported + "|" + argu;
-				String iInput = "--> " + input;
-				System.out.println(iInput);
-				System.out.println(output);
+
+				if (supported.equals("Y")) {
+					if (dateList.contains(tag)) {
+						dateType = tag;
+					} else {
+						if(lvl == 0) {
+							if (tag.equals("INDI")) {
+								ind_key = argu.replaceAll("@", "");
+								ind.put(ind_key, new HashMap<>());
+							} else if (tag.equals("FAM")) {
+								fam_key = argu.replaceAll("@", "");
+								fam.put(fam_key, new HashMap<>());
+							}
+							type = tag;
+						} else {
+							if (type.equals("FAM")) {
+								HashMap<String, Object> temp_fam = fam.get(fam_key);
+								if (tag.equals("HUSB") || tag.equals("WIFE")) {
+									temp_fam.put(tag, argu.replace("@", ""));
+								} else if (tag.equals("CHIL")) {
+									ArrayList arr = (ArrayList) temp_fam.get(tag);
+									if (arr == null) {
+										arr = new ArrayList();
+									}
+									arr.add(argu.replace("@", ""));
+									temp_fam.put(tag, arr);
+								} else if (tag.equals("DATE")) {
+									temp_fam.put(dateType, argu);
+									dateType = "";
+								}
+								fam.put(fam_key, temp_fam);
+							} else if (type.equals("INDI")) {
+								HashMap<String, Object> temp_ind = ind.get(ind_key);
+								if (tag.contains("FAM")) {
+									ArrayList arr = (ArrayList) temp_ind.get(tag);
+									if (arr == null) {
+										arr = new ArrayList();
+									}
+									arr.add(argu.replace("@", ""));
+									temp_ind.put(tag, arr);
+								} else if (tag.equals("DATE")) {
+									temp_ind.put(dateType, argu);
+									dateType = "";
+								} else {
+									temp_ind.put(tag, argu);
+								}
+								ind.put(ind_key, temp_ind);
+							}
+
+						}
+					}
+				}
 			}
+
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
+
+		printfTable(ind, "INDI");
+		System.out.println("\n\n");
+		printfTable(fam, "FAM");
 	}
 
 }
