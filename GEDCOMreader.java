@@ -1,5 +1,3 @@
-import org.jetbrains.annotations.NotNull;
-
 import java.io.*;
 import java.util.*;
 
@@ -15,8 +13,10 @@ public class GEDCOMreader {
 	public static String[] lvlTwo = { "DATE" };
 	public static String[] isDate = { "BIRT", "DEAT", "MARR", "DIV"};
 	public static ArrayList<String> dateList = new ArrayList<>(Arrays.asList(isDate));
+	
 	private static HashMap<String, HashMap<String, Object>> ind = new HashMap<>(5000);
 	private static HashMap<String, HashMap<String, Object>> fam = new HashMap<>(1000);
+	
 	/**
 	 * Finds tag within the input string
 	 * @param input GEDCOM line that is being analyzed
@@ -124,26 +124,32 @@ public class GEDCOMreader {
 
 	private static String getChildren(Object temp) {
 		if (temp == null)
-			return "";
+			return "NA";
 
 		ArrayList famList = (ArrayList) temp;
 		ArrayList children = new ArrayList();
-		String s = "";
+		String s = "[";
+		
 		for (Object famNum : famList) {
 			ArrayList childrenGot = (ArrayList) fam.get(famNum).get("CHIL");
 			children.addAll(childrenGot);
 		}
+		
 		for (Object child : children) {
-			s += child + " ";
+			s += child + ", ";
 		}
+		
+		s += "]";
+		s = s.replace(", ]", "]");
 		return s;
 	}
 
 	private static String getSpouse(Object temp, Object sex) {
 		if (temp == null)
-			return "";
+			return "NA";
+		
 		ArrayList famList = (ArrayList) temp;
-		String s = "";
+		String s = "[";
 		String wifeOrHus;
 		if (sex.equals("M"))
 			wifeOrHus = "WIFE";
@@ -153,9 +159,11 @@ public class GEDCOMreader {
 		for (Object famNum : famList) {
 			String spouseGot = (String) fam.get(famNum).get(wifeOrHus);
 			if (spouseGot != null)
-				s += spouseGot + " ";
+				s += spouseGot + ", ";
 		}
-
+		
+		s += "]";
+		s = s.replace(", ]", "]");
 		return s;
 	}
 
@@ -173,21 +181,21 @@ public class GEDCOMreader {
 			for (int i = 1; i <= num; i++) {
 				tag = "I" + i;
 				temp = table.get(tag);
-				System.out.println(String.format("%5s %25s %6s %15s %3s %5s %15s %20s %20s", tag, temp.get("NAME"), temp.get("SEX"), temp.get("BIRT"), calcAge(temp), isAlive(temp), temp.get("DEAT"),getChildren(temp.get("FAMS")), getSpouse(temp.get("FAMS"),temp.get("SEX"))));
+				System.out.println(String.format("%5s %25s %6s %15s %3s %5s %15s %20s %20s", tag, temp.get("NAME"), temp.get("SEX"), temp.get("BIRT"), calcAge(temp), isAlive(temp), temp.get("DEAT") != null ? temp.get("DEAT") : "NA", getChildren(temp.get("FAMS")), getSpouse(temp.get("FAMS"), temp.get("SEX"))));
 			}
 		} else if (type.equals("FAM")) {
 			System.out.println(String.format("%5s %20s %20s %10s %20s %10s %20s %20s", "ID", "Married", "Divorced", "Husband ID", "Husband Name", "Wife ID", "Wife Name", "Children"));
 			for (int i = 1; i <= num; i++) {
 				tag = "F" + i;
 				temp = table.get(tag);
-				System.out.println(String.format("%5s %20s %20s %10s %20s %10s %20s %20s", tag, temp.get("MARR"), temp.get("DIV"), temp.get("HUSB"), getName(temp.get("HUSB")), temp.get("WIFE"), getName(temp.get("WIFE")), temp.get("CHIL")));
+				System.out.println(String.format("%5s %20s %20s %10s %20s %10s %20s %20s", tag, temp.get("MARR"), temp.get("DIV") != null ? temp.get("DIV") : "NA", temp.get("HUSB"), getName(temp.get("HUSB")), temp.get("WIFE"), getName(temp.get("WIFE")), temp.get("CHIL")));
 			}
 		}
 
 	}
 
 	public static void main(String[] args) {
-		File fileName = new File("Kaye_Abigail_testFile.txt");
+		File fileName = new File("Nishant Patel_A01.ged");
 
 		String dateType = "";
 		String ind_key = "";
@@ -263,9 +271,11 @@ public class GEDCOMreader {
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
-
+		
+		System.out.println("Individuals");
 		printfTable(ind, "INDI");
 		System.out.println("\n\n");
+		System.out.println("Families");
 		printfTable(fam, "FAM");
 	}
 
