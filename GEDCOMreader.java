@@ -13,7 +13,8 @@ public class GEDCOMreader {
 	public static String[] lvlTwo = { "DATE" };
 	public static String[] isDate = { "BIRT", "DEAT", "MARR", "DIV"};
 	public static ArrayList<String> dateList = new ArrayList<>(Arrays.asList(isDate));
-	
+	private static ArrayList<Integer> indArr = new ArrayList<>();
+	private static ArrayList<Integer> famArr = new ArrayList<>();
 	private static HashMap<String, HashMap<String, Object>> ind = new HashMap<>(5000);
 	private static HashMap<String, HashMap<String, Object>> fam = new HashMap<>(1000);
 	
@@ -173,19 +174,20 @@ public class GEDCOMreader {
 
 
 	private static void printfTable(HashMap<String, HashMap<String, Object>> table, String type) {
-		int num = table.size();
 		HashMap<String, Object> temp;
 		String tag;
 		if (type.equals("INDI")) {
+			Collections.sort(indArr);
 			System.out.println(String.format("%5s %25s %6s %15s %3s %5s %15s %20s %20s", "ID", "NAME", "Gender", "Birthday", "Age", "Alive", "Death", "Child", "Spouse"));
-			for (int i = 1; i <= num; i++) {
+			for (Integer i : indArr) {
 				tag = "I" + i;
 				temp = table.get(tag);
 				System.out.println(String.format("%5s %25s %6s %15s %3s %5s %15s %20s %20s", tag, temp.get("NAME"), temp.get("SEX"), temp.get("BIRT"), calcAge(temp), isAlive(temp), temp.get("DEAT") != null ? temp.get("DEAT") : "NA", getChildren(temp.get("FAMS")), getSpouse(temp.get("FAMS"), temp.get("SEX"))));
 			}
 		} else if (type.equals("FAM")) {
+			Collections.sort(famArr);
 			System.out.println(String.format("%5s %20s %20s %10s %20s %10s %20s %20s", "ID", "Married", "Divorced", "Husband ID", "Husband Name", "Wife ID", "Wife Name", "Children"));
-			for (int i = 1; i <= num; i++) {
+			for (Integer i : famArr) {
 				tag = "F" + i;
 				temp = table.get(tag);
 				System.out.println(String.format("%5s %20s %20s %10s %20s %10s %20s %20s", tag, temp.get("MARR"), temp.get("DIV") != null ? temp.get("DIV") : "NA", temp.get("HUSB"), getName(temp.get("HUSB")), temp.get("WIFE"), getName(temp.get("WIFE")), temp.get("CHIL")));
@@ -222,10 +224,12 @@ public class GEDCOMreader {
 						if(lvl == 0) {
 							if (tag.equals("INDI")) {
 								ind_key = argu.replaceAll("@", "");
+								indArr.add(Integer.parseInt(ind_key.substring(1)));
 								ind.put(ind_key, new HashMap<>());
 							} else if (tag.equals("FAM")) {
 								fam_key = argu.replaceAll("@", "");
 								fam.put(fam_key, new HashMap<>());
+								famArr.add(Integer.parseInt(fam_key.substring(1)));
 							}
 							type = tag;
 						} else {
