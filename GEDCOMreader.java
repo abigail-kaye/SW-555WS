@@ -1,5 +1,6 @@
 import java.io.*;
 import java.util.*;
+import java.util.Calendar;
 
 public class GEDCOMreader {
 
@@ -12,14 +13,22 @@ public class GEDCOMreader {
 			"DIV" };
 	public static String[] lvlTwo = { "DATE" };
 	public static String[] isDate = { "BIRT", "DEAT", "MARR", "DIV"};
+																   
+
 	public static ArrayList<String> dateList = new ArrayList<>(Arrays.asList(isDate));
+			
 	private static ArrayList<Integer> indArr = new ArrayList<>();
 	private static ArrayList<Integer> famArr = new ArrayList<>();
+	   
+
+												
 	private static HashMap<String, HashMap<String, Object>> ind = new HashMap<>(5000);
 	private static HashMap<String, HashMap<String, Object>> fam = new HashMap<>(1000);
 	
 	/**
 	 * Finds tag within the input string
+	
+				
 	 * @param input GEDCOM line that is being analyzed
 	 * @return tag of current line
 	 */
@@ -61,7 +70,10 @@ public class GEDCOMreader {
 
 	/**
 	 * Find any arguments within the current input line
+	
+				
 	 * @param input GEDCOM line that is being analyzed
+			  
 	 * @param tag tag of line being analyzed
 	 * @return extra line arguments
 	 * 		null if error
@@ -84,8 +96,11 @@ public class GEDCOMreader {
 
 	/**
 	 * Check if tag is supported
+	
 	 * @param lvl line level
+						 
 	 * @param tag tag to check
+						   
 	 * @return "Y" if tag is supported
 	 * 			"N" if tag is not supported
 	 */
@@ -108,14 +123,27 @@ public class GEDCOMreader {
 	}
 
 	private static String calcAge(HashMap<String, Object> temp) {
+		Calendar now = Calendar.getInstance();
+
 		String deathDate = (String) temp.get("DEAT");
 		int birthYear = Integer.parseInt(((String) temp.get("BIRT")).split(" ")[2]);
-		if (deathDate == null) {
-			return String.valueOf((2018 - birthYear));
-		} else {
+		String monthString = (((String) temp.get("BIRT")).split(" ")[1]);
+		int birthDay = Integer.parseInt(((String) temp.get("BIRT")).split(" ")[0]);
+
+		if (deathDate != null) {
 			int deathYear = Integer.parseInt(deathDate.split(" ")[2]);
 			return String.valueOf(deathYear - birthYear);
 		}
+		int monthNum = months.get(monthString);
+		if (now.get(Calendar.MONTH) < monthNum)
+			return String.valueOf((2017 - birthYear));
+		else if (now.get(Calendar.MONTH) == monthNum) {
+			int currDay = now.get(Calendar.DAY_OF_MONTH);
+			if (currDay < birthDay)
+				return String.valueOf((2017 - birthYear));
+		}
+		return String.valueOf((2018 - birthYear));
+
 	}
 
 	private static boolean isAlive(HashMap<String, Object> temp) {
@@ -177,27 +205,60 @@ public class GEDCOMreader {
 		HashMap<String, Object> temp;
 		String tag;
 		if (type.equals("INDI")) {
+			
 			Collections.sort(indArr);
 			System.out.println(String.format("%5s %25s %6s %15s %3s %5s %15s %20s %20s", "ID", "NAME", "Gender", "Birthday", "Age", "Alive", "Death", "Child", "Spouse"));
 			for (Integer i : indArr) {
+	   
+																									   
+															  
+								   
+												
 				tag = "I" + i;
 				temp = table.get(tag);
 				System.out.println(String.format("%5s %25s %6s %15s %3s %5s %15s %20s %20s", tag, temp.get("NAME"), temp.get("SEX"), temp.get("BIRT"), calcAge(temp), isAlive(temp), temp.get("DEAT") != null ? temp.get("DEAT") : "NA", getChildren(temp.get("FAMS")), getSpouse(temp.get("FAMS"), temp.get("SEX"))));
+																	  
+																						
+													 
 			}
 		} else if (type.equals("FAM")) {
+			
 			Collections.sort(famArr);
 			System.out.println(String.format("%5s %20s %20s %10s %20s %10s %20s %20s", "ID", "Married", "Divorced", "Husband ID", "Husband Name", "Wife ID", "Wife Name", "Children"));
 			for (Integer i : famArr) {
+	   
+																										  
+																		
+								   
+												
 				tag = "F" + i;
 				temp = table.get(tag);
 				System.out.println(String.format("%5s %20s %20s %10s %20s %10s %20s %20s", tag, temp.get("MARR"), temp.get("DIV") != null ? temp.get("DIV") : "NA", temp.get("HUSB"), getName(temp.get("HUSB")), temp.get("WIFE"), getName(temp.get("WIFE")), temp.get("CHIL")));
+																									
+																	  
 			}
 		}
 
 	}
 
+	public static void fillMonthHashMap() {
+		months.put("JAN", 0);
+		months.put("FEB", 1);
+		months.put("MAR", 2);
+		months.put("APR", 3);
+		months.put("MAY", 4);
+		months.put("JUN", 5);
+		months.put("JUL", 6);
+		months.put("AUG", 7);
+		months.put("SEP", 8);
+		months.put("OCT", 9);
+		months.put("NOV", 10);
+		months.put("DEC", 11);
+	}
+
 	public static void main(String[] args) {
 		File fileName = new File("Nishant Patel_A01.ged");
+					 
 
 		String dateType = "";
 		String ind_key = "";
