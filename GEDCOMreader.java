@@ -20,8 +20,9 @@ public class GEDCOMreader {
 	public static HashMap<String, Integer> months = new HashMap<>(12);
 	private static HashMap<String, HashMap<String, Object>> ind = new HashMap<>(5000);
 	private static HashMap<String, HashMap<String, Object>> fam = new HashMap<>(1000);
+    private static String date;
 
-	/**
+    /**
 	 * Finds tag within the input string
 	 * 
 	 * @param input
@@ -114,13 +115,20 @@ public class GEDCOMreader {
 		return "N";
 	}
 
-	private static String calcAge(HashMap<String, Object> temp) {
+    /**
+     * Calculate the age
+     * @param individual
+     *          hashmap store all individual information
+     * @return Age in this year if alive
+     * 		   Or age when he's dead
+     */
+	private static String calcAge(HashMap<String, Object> individual) {
 		Calendar now = Calendar.getInstance();
 
-		String deathDate = (String) temp.get("DEAT");
-		int birthYear = Integer.parseInt(((String) temp.get("BIRT")).split(" ")[2]);
-		String monthString = (((String) temp.get("BIRT")).split(" ")[1]);
-		int birthDay = Integer.parseInt(((String) temp.get("BIRT")).split(" ")[0]);
+		String deathDate = (String) individual.get("DEAT");
+		int birthYear = Integer.parseInt(((String) individual.get("BIRT")).split(" ")[2]);
+		String monthString = (((String) individual.get("BIRT")).split(" ")[1]);
+		int birthDay = Integer.parseInt(((String) individual.get("BIRT")).split(" ")[0]);
 
 		if (deathDate != null) {
 			int deathYear = Integer.parseInt(deathDate.split(" ")[2]);
@@ -138,16 +146,32 @@ public class GEDCOMreader {
 
 	}
 
-	private static boolean isAlive(HashMap<String, Object> temp) {
-		String deathDate = (String) temp.get("DEAT");
+	/**
+	 * Check if alive
+	 * @param  individual
+     *              hashmap store all individual information
+	 * @return true if alive
+	 * 		   or false
+	 */
+
+	private static boolean isAlive(HashMap<String, Object> individual) {
+		String deathDate = (String) individual.get("DEAT");
 		return deathDate == null;
 	}
 
-	private static String getChildren(Object temp) {
-		if (temp == null)
+	/**
+	 * Get all children
+	 * @param  famlist
+     *             store all associated fam ID
+	 * @return "NA" if there is no child
+	 * 		   Or a string of all children
+	 */
+
+	private static String getChildren(Object famlist) {
+		if (famlist == null)
 			return "NA";
 
-		ArrayList famList = (ArrayList) temp;
+		ArrayList famList = (ArrayList) famlist;
 		ArrayList children = new ArrayList();
 		String s = "[";
 
@@ -165,11 +189,21 @@ public class GEDCOMreader {
 		return s;
 	}
 
-	private static String getSpouse(Object temp, Object sex) {
-		if (temp == null)
-			return "NA";
+    /**
+     * Get all spouse
+     * @param  famlist
+     *              Store all associated family IDs
+     *         sex
+     *              Store associated sex
+     * @return "NA" if there is no spouse
+     * 		   Or a string of all spouses
+     */
 
-		ArrayList famList = (ArrayList) temp;
+	private static String getSpouse(Object famlist, Object sex) {
+		if (famlist == null)
+			return "NA";
+		
+		ArrayList famList = (ArrayList) famlist;
 		String s = "[";
 		String wifeOrHus;
 		if (sex.equals("M"))
@@ -188,10 +222,26 @@ public class GEDCOMreader {
 		return s;
 	}
 
+    /**
+     * Get name through ID
+     * @param  ID
+     *          Individual's ID
+     * @return return a string name
+     * 		   Or a string of all spouses
+     */
 	private static String getName(Object ID) {
 		return (String) ind.get(ID).get("NAME");
 	}
 
+    /**
+     * Print the table
+     * @param  table
+     *             table needed to be printed
+     *         type
+     *             individual table or family table
+     * @return Null
+     *
+     */
 	private static void printfTable(HashMap<String, HashMap<String, Object>> table, String type) {
 		HashMap<String, Object> temp;
 		String tag;
@@ -201,7 +251,6 @@ public class GEDCOMreader {
 			System.out.println(String.format("%5s %25s %6s %15s %3s %5s %15s %20s %20s", "ID", "NAME", "Gender",
 					"Birthday", "Age", "Alive", "Death", "Child", "Spouse"));
 			for (Integer i : indArr) {
-
 				tag = "I" + i;
 				temp = table.get(tag);
 				System.out.println(String.format("%5s %25s %6s %15s %3s %5s %15s %20s %20s", tag, temp.get("NAME"),
@@ -228,24 +277,44 @@ public class GEDCOMreader {
 
 	}
 
-	public static void fillMonthHashMap() {
-		months.put("JAN", 0);
-		months.put("FEB", 1);
-		months.put("MAR", 2);
-		months.put("APR", 3);
-		months.put("MAY", 4);
-		months.put("JUN", 5);
-		months.put("JUL", 6);
-		months.put("AUG", 7);
-		months.put("SEP", 8);
-		months.put("OCT", 9);
-		months.put("NOV", 10);
-		months.put("DEC", 11);
-	}
+    private static void fillMonthHashMap() {
+        months.put("JAN", 0);
+        months.put("FEB", 1);
+        months.put("MAR", 2);
+        months.put("APR", 3);
+        months.put("MAY", 4);
+        months.put("JUN", 5);
+        months.put("JUL", 6);
+        months.put("AUG", 7);
+        months.put("SEP", 8);
+        months.put("OCT", 9);
+        months.put("NOV", 10);
+        months.put("DEC", 11);
+    }
 
+    /**
+     * Check whether date is valid, before today's date
+     * @param  date
+     *           today's date
+     * @return true if valid
+     *          or false
+     */
+
+    public static boolean dateValid(String date) {
+
+        return true;
+    }
+
+    /**
+     * Parse the GED file and Store associated information into ind or fam hashmap
+     * Print the ind and fam table
+     * @param  Null
+     * @return Null
+     *
+     */
 	public static void main(String[] args) {
 		File fileName = new File("Nishant Patel_A01.ged");
-
+        fillMonthHashMap();
 		String dateType = "";
 		String ind_key = "";
 		String fam_key = "";
