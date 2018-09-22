@@ -3,3 +3,6 @@ out
 /GEDCOMreader.class
 .classpath
 .project
+GEDCOMreaderTest.java
+TestRunner.java
+

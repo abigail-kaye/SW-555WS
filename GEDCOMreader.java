@@ -1,7 +1,6 @@
-import java.io.*;
 import java.util.*;
 import java.util.Calendar;
-
+import java.io.*;
 public class GEDCOMreader {
 
 	/**
@@ -21,7 +20,7 @@ public class GEDCOMreader {
 	private static HashMap<String, HashMap<String, Object>> ind = new HashMap<>(5000);
 	private static HashMap<String, HashMap<String, Object>> fam = new HashMap<>(1000);
     private static String date;
-
+    static Calendar now = Calendar.getInstance();
     /**
 	 * Finds tag within the input string
 	 * 
@@ -123,8 +122,6 @@ public class GEDCOMreader {
      * 		   Or age when he's dead
      */
 	private static String calcAge(HashMap<String, Object> individual) {
-		Calendar now = Calendar.getInstance();
-
 		String deathDate = (String) individual.get("DEAT");
 		int birthYear = Integer.parseInt(((String) individual.get("BIRT")).split(" ")[2]);
 		String monthString = (((String) individual.get("BIRT")).split(" ")[1]);
@@ -143,7 +140,6 @@ public class GEDCOMreader {
 				return String.valueOf((2017 - birthYear));
 		}
 		return String.valueOf((2018 - birthYear));
-
 	}
 
 	/**
@@ -301,8 +297,50 @@ public class GEDCOMreader {
      */
 
     public static boolean dateValid(String date) {
+        fillMonthHashMap();
+        int year = Integer.parseInt(date.split(" ")[2]);
+        int month = months.get(date.split(" ")[1]);
+        int day = Integer.parseInt(date.split(" ")[0]);
+        int nowYear = now.get(Calendar.YEAR);
+        int nowMonth = now.get(Calendar.MONTH);
+        int nowDay = now.get(Calendar.DAY_OF_MONTH);
+        return compare_date(year, month, day, nowYear, nowMonth, nowDay);
+    }
 
-        return true;
+    /**
+     * Check whether married date is valid, before birthdate
+     * @param  date
+     *           today's date
+     * @return true if valid
+     *          or false
+     */
+
+    public static boolean marriedDateValid(String marriedDate, String birthDate) {
+        fillMonthHashMap();
+        int marriedYear = Integer.parseInt(marriedDate.split(" ")[2]);
+        int marriedMonth = months.get(marriedDate.split(" ")[1]);
+        int marriedDay = Integer.parseInt(marriedDate.split(" ")[0]);
+        int birthYear = Integer.parseInt(birthDate.split(" ")[2]);
+        int birthMonth = months.get(birthDate.split(" ")[1]);
+        int birthDay = Integer.parseInt(birthDate.split(" ")[0]);
+        return compare_date(birthYear, birthMonth, birthDay, marriedYear, marriedMonth, marriedDay);
+    }
+
+    private static boolean compare_date(int year, int month, int day, int year_later, int month_later, int day_later) {
+        if (year > year_later)
+            return false;
+        else if (year < year_later)
+            return true;
+        else if (month > month_later)
+            return false;
+        else if (month < month_later)
+            return true;
+        else if (day > day_later)
+            return false;
+        else if (day < day_later)
+            return true;
+        else
+            return true;
     }
 
     /**
@@ -361,7 +399,10 @@ public class GEDCOMreader {
 									arr.add(argu.replace("@", ""));
 									temp_fam.put(tag, arr);
 								} else if (tag.equals("DATE")) {
-									temp_fam.put(dateType, argu);
+                                    if (dateValid(argu))
+									    temp_fam.put(dateType, argu);
+                                    else
+                                        temp_fam.put(dateType, "Invalid Date");
 									dateType = "";
 								}
 								fam.put(fam_key, temp_fam);
@@ -375,7 +416,10 @@ public class GEDCOMreader {
 									arr.add(argu.replace("@", ""));
 									temp_ind.put(tag, arr);
 								} else if (tag.equals("DATE")) {
-									temp_ind.put(dateType, argu);
+								    if (dateValid(argu))
+									    temp_ind.put(dateType, argu);
+								    else
+                                        temp_ind.put(dateType, "Invalid Date");
 									dateType = "";
 								} else {
 									temp_ind.put(tag, argu);
