@@ -114,7 +114,41 @@ public class GEDCOMreader {
 		return "N";
 	}
 
+	/**
+	 * Check if date is in correct format and follows date rules
+	 * 
+	 * @param date
+	 *            - date to check (in string form)
+	 * @return true if date is correct; false if date is incorrect
+	 */
+	public static boolean isValidDate(String date) {
+		/* Break string into respective parts */
+		int year = Integer.parseInt(date.split(" ")[2]);
+		String month = date.split(" ")[1];
+		int day = Integer.parseInt(date.split(" ")[0]);
+		if (year > 2018 || year < 0) // Check year not too large or too small
+			return false;
+		boolean flag = false;
+		for (String s : months.keySet()) { // Check if valid month
+			if (s.equals(month))
+				flag = true;
+		}
+		if (flag == false)
+			return false;
+		if (day > 31 || day < 1) // Check if day is within normal bounds
+			return false;
+		if (month.equals("FEB") && day > 28) // Check February end date
+			return false;
+		if ((month.equals("APR") || month.equals("JUN") || month.equals("SEP") || month.equals("NOV")) && day > 30) // Check months with 30 days
+			return false;
+		return true;
+	}
+
 	private static String calcAge(HashMap<String, Object> temp) {
+		if ((String) temp.get("DEAT") == "invalid")
+			return "Unknown";
+		if ((String) temp.get("BIRT") == "invalid")
+			return "Unknown";
 		Calendar now = Calendar.getInstance();
 
 		String deathDate = (String) temp.get("DEAT");
@@ -135,7 +169,6 @@ public class GEDCOMreader {
 				return String.valueOf((2017 - birthYear));
 		}
 		return String.valueOf((2018 - birthYear));
-
 	}
 
 	private static boolean isAlive(HashMap<String, Object> temp) {
@@ -244,8 +277,8 @@ public class GEDCOMreader {
 	}
 
 	public static void main(String[] args) {
-		File fileName = new File("Nishant Patel_A01.ged");
-
+		File fileName = new File("Kaye_Abigail_testFile.txt");
+		fillMonthHashMap();
 		String dateType = "";
 		String ind_key = "";
 		String fam_key = "";
@@ -292,7 +325,10 @@ public class GEDCOMreader {
 									arr.add(argu.replace("@", ""));
 									temp_fam.put(tag, arr);
 								} else if (tag.equals("DATE")) {
-									temp_fam.put(dateType, argu);
+									if (!isValidDate(argu))
+										temp_fam.put(dateType, "invalid");
+									else 
+										temp_fam.put(dateType, argu);
 									dateType = "";
 								}
 								fam.put(fam_key, temp_fam);
@@ -306,7 +342,10 @@ public class GEDCOMreader {
 									arr.add(argu.replace("@", ""));
 									temp_ind.put(tag, arr);
 								} else if (tag.equals("DATE")) {
-									temp_ind.put(dateType, argu);
+									if (!isValidDate(argu))
+										temp_ind.put(dateType, "invalid");
+									else
+										temp_ind.put(dateType, argu);
 									dateType = "";
 								} else {
 									temp_ind.put(tag, argu);
