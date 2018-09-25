@@ -14,12 +14,20 @@ public class GEDCOMreader {
 	public static String[] isDate = { "BIRT", "DEAT", "MARR", "DIV" };
 
 	public static ArrayList<String> dateList = new ArrayList<>(Arrays.asList(isDate));
-	private static ArrayList<Integer> indArr = new ArrayList<>();
-	private static ArrayList<Integer> famArr = new ArrayList<>();
+	private static ArrayList<Integer> indArr = new ArrayList<>(); //Array of individuals
+	private static ArrayList<Integer> famArr = new ArrayList<>(); //Array of families
+	private static ArrayList<String> errors = new ArrayList<>(); //Array of errors
 
 	public static HashMap<String, Integer> months = new HashMap<>(12);
-	private static HashMap<String, HashMap<String, Object>> ind = new HashMap<>(5000);
-	private static HashMap<String, HashMap<String, Object>> fam = new HashMap<>(1000);
+	private static HashMap<String, HashMap<String, Object>> ind = new HashMap<>(5000); //Hashmap of information for each individual
+	private static HashMap<String, HashMap<String, Object>> fam = new HashMap<>(1000); //Hashmap of information for each family
+
+	/**
+	 * Returns true if entered ID is unique
+	 */
+	public static boolean isUniqueID(String id, HashMap<String, HashMap<String, Object>> map) {
+		return map.get(id) == null;
+	}
 
 	/**
 	 * Finds tag within the input string
@@ -145,12 +153,15 @@ public class GEDCOMreader {
 	}
 
 	private static String calcAge(HashMap<String, Object> temp) {
+		
+		/* Accounts for incorrect date format */
 		if ((String) temp.get("DEAT") == "invalid")
-			return "Unknown";
+			return "NA";
 		if ((String) temp.get("BIRT") == "invalid")
-			return "Unknown";
+			return "NA";
+		
+		
 		Calendar now = Calendar.getInstance();
-
 		String deathDate = (String) temp.get("DEAT");
 		int birthYear = Integer.parseInt(((String) temp.get("BIRT")).split(" ")[2]);
 		String monthString = (((String) temp.get("BIRT")).split(" ")[1]);
@@ -237,10 +248,21 @@ public class GEDCOMreader {
 
 				tag = "I" + i;
 				temp = table.get(tag);
-				System.out.println(String.format("%5s %25s %6s %15s %3s %5s %15s %20s %20s", tag, temp.get("NAME"),
-						temp.get("SEX"), temp.get("BIRT"), calcAge(temp), isAlive(temp),
+				int calculated_age = Integer.parseInt(calcAge(temp));
+					System.out.println(String.format("%5s %25s %6s %15s %3s %5s %15s %20s %20s", tag, temp.get("NAME"),
+						temp.get("SEX"), temp.get("BIRT"), String.valueOf(calculated_age), isAlive(temp),
 						temp.get("DEAT") != null ? temp.get("DEAT") : "NA", getChildren(temp.get("FAMS")),
 						getSpouse(temp.get("FAMS"), temp.get("SEX"))));
+				if (calculated_age > 150) {
+					String birth = (String) temp.get("BIRT");
+					String death = (String) temp.get("DEAT");
+					String e;
+					if (temp.get("DEAT") == null)
+						e = ("ERROR: INDIVIDUAL: US07: "+ tag + ":  More than 150 years old - Birth " + birth);
+					else
+						e =("ERROR: INDIVIDUAL: US07: " +tag + ":  More than 150 years old at death - Birth " + birth + ": Death " + death);
+					errors.add(e);
+				}
 
 			}
 		} else if (type.equals("FAM")) {
@@ -249,17 +271,15 @@ public class GEDCOMreader {
 			System.out.println(String.format("%5s %20s %20s %10s %20s %10s %20s %20s", "ID", "Married", "Divorced",
 					"Husband ID", "Husband Name", "Wife ID", "Wife Name", "Children"));
 			for (Integer i : famArr) {
-
 				tag = "F" + i;
 				temp = table.get(tag);
 				System.out.println(String.format("%5s %20s %20s %10s %20s %10s %20s %20s", tag, temp.get("MARR"),
 						temp.get("DIV") != null ? temp.get("DIV") : "NA", temp.get("HUSB"), getName(temp.get("HUSB")),
 						temp.get("WIFE"), getName(temp.get("WIFE")), temp.get("CHIL")));
-
 			}
 		}
-
 	}
+
 
 	public static void fillMonthHashMap() {
 		months.put("JAN", 0);
@@ -304,12 +324,24 @@ public class GEDCOMreader {
 						if (lvl == 0) {
 							if (tag.equals("INDI")) {
 								ind_key = argu.replaceAll("@", "");
-								indArr.add(Integer.parseInt(ind_key.substring(1)));
-								ind.put(ind_key, new HashMap<>());
+								if (isUniqueID(ind_key, ind)) {
+									indArr.add(Integer.parseInt(ind_key.substring(1)));
+									ind.put(ind_key, new HashMap<>());
+								} else {
+									System.out.println("Individual ID " + ind_key + " is not unique");
+
+									return;
+								}
+
 							} else if (tag.equals("FAM")) {
 								fam_key = argu.replaceAll("@", "");
-								fam.put(fam_key, new HashMap<>());
-								famArr.add(Integer.parseInt(fam_key.substring(1)));
+								if (isUniqueID(fam_key, fam)) {
+									fam.put(fam_key, new HashMap<>());
+									famArr.add(Integer.parseInt(fam_key.substring(1)));
+								} else {
+									System.out.println("Family ID " + fam_key + " is not unique");
+									return;
+								}
 							}
 							type = tag;
 						} else {
@@ -327,7 +359,7 @@ public class GEDCOMreader {
 								} else if (tag.equals("DATE")) {
 									if (!isValidDate(argu))
 										temp_fam.put(dateType, "invalid");
-									else 
+									else
 										temp_fam.put(dateType, argu);
 									dateType = "";
 								}
@@ -367,5 +399,9 @@ public class GEDCOMreader {
 		System.out.println("\n\n");
 		System.out.println("Families");
 		printfTable(fam, "FAM");
+		System.out.println("\n");
+		for (String s : errors) {
+			System.out.println(s);
+		}
 	}
 }
