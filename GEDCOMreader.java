@@ -295,7 +295,35 @@ public class GEDCOMreader {
 		}
 	}
 
-	/**
+	private static void printfErrors(HashMap<String, HashMap<String, Object>> indiTable, HashMap<String, HashMap<String, Object>> famTable) {
+		HashMap<String, Object> temp;
+		String tag;
+		GEDCOMValidator validator = new GEDCOMValidator();
+		
+		Collections.sort(indArr);
+		
+		for (Integer i : indArr) {
+			tag = "I" + i;
+			temp = indiTable.get(tag);
+			
+			if(!validator.isDeathDateValid((String)temp.get("BIRT"), (String)temp.get("DEAT"))){
+				System.out.println("ERROR: INDIVIDUAL: US03: " + tag + ": Died " + temp.get("DEAT") + " before born " + temp.get("BIRT"));
+			}	
+		}
+		
+		Collections.sort(famArr);
+		
+		for (Integer i : famArr) {
+			tag = "F" + i;
+			temp = famTable.get(tag);
+			
+			if(!validator.isDivorceAfterMarriage((String)temp.get("MARR"), (String)temp.get("DIV"))){
+				System.out.println("ERROR: FAMILY: US04: " + tag + ": Divorced " + temp.get("DIV") + " before marriage " + temp.get("MARR"));
+			}
+		}
+	}
+  
+  /**
 	 * Fill hashmap with month data
 	 */
 	public static void fillMonthHashMap() {
@@ -407,20 +435,22 @@ public class GEDCOMreader {
 						}
 					}
 				}
-			}
-
-		} catch (FileNotFoundException e) { // Catch any errors 
+      }
+			s.close();
+		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
 
-		System.out.println("Individuals"); 
-		printfTable(ind, "INDI"); // Print individual table
-		System.out.println("\n\n");
-		System.out.println("Families");
-		printfTable(fam, "FAM"); // Print family table
+		System.out.println("Individuals");
+		printfTable(ind, "INDI");
 		System.out.println("\n");
-		for (String s : errors) { // Print errors
+		System.out.println("Families");
+		printfTable(fam, "FAM");
+		System.out.println("\n");
+    for (String s : errors) { // Print errors
 			System.out.println(s);
 		}
+		
+		printfErrors(ind, fam);
 	}
 }
