@@ -6,10 +6,8 @@ public class GEDCOMValidator {
 	/**
 	 * Birth should occur before death of an individual
 	 * 
-	 * @param input
-	 *            Birth date
-	 * @param input
-	 *            Death date
+	 * @param birthDateStr - Birth date
+	 * @param deathDateStr - Death date
 	 */
 	public boolean isDeathDateValid(String birthDateStr, String deathDateStr) {
 		try {
@@ -33,10 +31,8 @@ public class GEDCOMValidator {
 	/**
 	 * Marriage should occur before divorce of spouses, and divorce can only occur after marriage
 	 * 
-	 * @param input
-	 *            Marriage date
-	 * @param input
-	 *            Divorce date
+	 * @param marriageDateStr - Marriage date
+	 * @param divorceDateStr - Divorce date
 	 */
 	public boolean isDivorceAfterMarriage(String marriageDateStr, String divorceDateStr) {
 		try {
