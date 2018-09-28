@@ -17,10 +17,8 @@ public class GEDCOMreader {
 	private static ArrayList<String> errors = new ArrayList<>(); // Array list of errors
 
 	private static HashMap<String, Integer> months = new HashMap<>(12); // Hashmap of month and number association
-	private static HashMap<String, HashMap<String, Object>> ind = new HashMap<>(5000); // Hashmap of information for
-																						// each individual
-	private static HashMap<String, HashMap<String, Object>> fam = new HashMap<>(1000); // Hashmap of information for
-																						// each family
+	private static HashMap<String, HashMap<String, Object>> ind = new HashMap<>(5000); // Hashmap of information for each individual
+	private static HashMap<String, HashMap<String, Object>> fam = new HashMap<>(1000); // Hashmap of information for each family
 
 	/**
 	 * Returns true if entered ID is unique
@@ -32,8 +30,7 @@ public class GEDCOMreader {
 	/**
 	 * Finds tag within the input string
 	 * 
-	 * @param input
-	 *            - GEDCOM line that is being analyzed
+	 * @param input - GEDCOM line that is being analyzed
 	 * @return tag of current line
 	 */
 	private static String findTag(String input) {
@@ -57,8 +54,7 @@ public class GEDCOMreader {
 	/**
 	 * Checks if line is in the special format Applies to INDI and FAM lines only
 	 * 
-	 * @param input
-	 *            -GEDCOM line that is being analyzed
+	 * @param input - GEDCOM line that is being analyzed
 	 * @return 0 or 1 if it a special format 2 otherwise
 	 */
 	private static int isExceptionLineToo(String input) {
@@ -72,10 +68,8 @@ public class GEDCOMreader {
 	/**
 	 * Find any arguments within the current input line
 	 * 
-	 * @param input
-	 *            -GEDCOM line that is being analyzed
-	 * @param tag
-	 *            - tag of line being analyzed
+	 * @param input - GEDCOM line that is being analyzed
+	 * @param tag - tag of line being analyzed
 	 * @return extra line arguments null if error
 	 */
 	private static String findArgs(String input, String tag) {
@@ -97,10 +91,8 @@ public class GEDCOMreader {
 	/**
 	 * Check if tag is supported
 	 * 
-	 * @param lvl
-	 *            - line level
-	 * @param tag
-	 *            - tag to check
+	 * @param lvl - line level
+	 * @param tag - tag to check
 	 * @return "Y" if tag is supported "N" if tag is not supported
 	 */
 	private static String isSupportedTag(int lvl, String tag) {
@@ -124,8 +116,7 @@ public class GEDCOMreader {
 	/**
 	 * Check if date is in correct format and follows date rules
 	 * 
-	 * @param date
-	 *            - date to check (in string form)
+	 * @param date - date to check (in string form)
 	 * @return true if date is correct; false if date is incorrect
 	 */
 	private static boolean isValidDate(String date) {
@@ -147,11 +138,7 @@ public class GEDCOMreader {
 			return false;
 		if (month.equals("FEB") && day > 28) // Check February end date
 			return false;
-		if ((month.equals("APR") || month.equals("JUN") || month.equals("SEP") || month.equals("NOV")) && day > 30) // Check
-																													// months
-																													// with
-																													// 30
-																													// days
+		if ((month.equals("APR") || month.equals("JUN") || month.equals("SEP") || month.equals("NOV")) && day > 30) // Check months with 30 days
 			return false;
 		return true;
 	}
@@ -159,8 +146,7 @@ public class GEDCOMreader {
 	/**
 	 * Returns age (in string form) of individual
 	 * 
-	 * @param temp
-	 *            - individual to check
+	 * @param temp - individual to check
 	 */
 	private static String calcAge(HashMap<String, Object> temp) {
 
@@ -197,8 +183,7 @@ public class GEDCOMreader {
 	/**
 	 * Check if individual is alive
 	 * 
-	 * @param temp
-	 *            - individual to check
+	 * @param temp- individual to check
 	 * @return true if individual is alive; false if individual is deceased
 	 */
 	private static boolean isAlive(HashMap<String, Object> temp) {
@@ -209,8 +194,7 @@ public class GEDCOMreader {
 	/**
 	 * Return string of children
 	 * 
-	 * @param temp
-	 *            - family to check
+	 * @param temp - family to check
 	 */
 	private static String getChildren(Object temp) {
 		if (temp == null) // Return NA if no children
@@ -237,10 +221,8 @@ public class GEDCOMreader {
 	/**
 	 * Return string of
 	 * 
-	 * @param temp
-	 *            - individual
-	 * @param sex
-	 *            - sex of individual
+	 * @param temp - individual
+	 * @param sex - sex of individual
 	 */
 	private static String getSpouse(Object temp, Object sex) {
 		if (temp == null) // Return NA if no object
@@ -275,10 +257,8 @@ public class GEDCOMreader {
 	/**
 	 * Print table regarding individuals and families
 	 * 
-	 * @param table
-	 *            - (individual or family) table to print out
-	 * @param type
-	 *            - tag of table to print out out (INDI or FAM)
+	 * @param table - (individual or family) table to print out
+	 * @param type - tag of table to print out out (INDI or FAM)
 	 */
 	private static void printfTable(HashMap<String, HashMap<String, Object>> table, String type) {
 		HashMap<String, Object> temp;
@@ -413,13 +393,7 @@ public class GEDCOMreader {
 																						// list
 									ind.put(ind_key, new HashMap<>()); // Create new line item for individual
 								} else {
-									System.out.println("ERROR: US22: Individual ID " + ind_key + " is not unique"); // Print
-																													// error
-																													// if
-																													// ID
-																													// is
-																													// not
-																													// unique
+									System.out.println("ERROR: US22: Individual ID " + ind_key + " is not unique"); // Print error if ID is not unique
 									return;
 								}
 							} else if (tag.equals("FAM")) { // Get family information
