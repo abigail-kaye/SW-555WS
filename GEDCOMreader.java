@@ -171,13 +171,13 @@ public class GEDCOMreader {
 
 		int monthNum = months.get(monthString); // Get current month
 		if (now.get(Calendar.MONTH) < monthNum) // Check if birth month has already passed
-			return String.valueOf((2017 - birthYear)); // Return age
+			return String.valueOf((Calendar.getInstance().get(Calendar.YEAR) - 1 - birthYear)); // Return age
 		else if (now.get(Calendar.MONTH) == monthNum) { // Check if birth month is this month
 			int currDay = now.get(Calendar.DAY_OF_MONTH); // Get current day
 			if (currDay < birthDay) // Check if birth day has not passed yet
-				return String.valueOf((2017 - birthYear)); // Return age
+				return String.valueOf((Calendar.getInstance().get(Calendar.YEAR) - 1 - birthYear)); // Return age
 		}
-		return String.valueOf((2018 - birthYear)); // Return age
+		return String.valueOf((Calendar.getInstance().get(Calendar.YEAR) - birthYear)); // Return age
 	}
 
 	/**
