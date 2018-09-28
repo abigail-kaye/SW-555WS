@@ -211,7 +211,6 @@ public class GEDCOMreader {
 
 			}
 		} else if (type.equals("FAM")) {
-
 			Collections.sort(famArr);
 			System.out.println(String.format("%5s %20s %20s %10s %20s %10s %20s %20s", "ID", "Married", "Divorced",
 					"Husband ID", "Husband Name", "Wife ID", "Wife Name", "Children"));
