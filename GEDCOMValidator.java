@@ -35,21 +35,39 @@ public class GEDCOMValidator {
 	 * @param divorceDateStr - Divorce date
 	 */
 	public boolean isDivorceAfterMarriage(String marriageDateStr, String divorceDateStr) {
+		return isDeathDateValid(marriageDateStr, divorceDateStr);
+	}
+
+	/**
+	 * Birth should occur before marriage of an individual
+	 *
+	 * @param birthDateStr - Birth date
+	 * @param marriageDateStr - Marriage date
+	 */
+	public boolean isBirthDateBeforeMarriageDate(String birthDateStr, String marriageDateStr) {
+		return isDeathDateValid(birthDateStr, marriageDateStr);
+	}
+
+	/**
+	 * Date should be before today's date
+	 *
+	 * @param dateStr - date
+	 */
+	public boolean isDateBeforeCurrentDate(String dateStr) {
 		try {
-			if(divorceDateStr == null || divorceDateStr == "")
+			if(dateStr == null || dateStr == "")
 				return true;
-			
-		    Date marriageDate = new SimpleDateFormat("dd MMM yyyy").parse(marriageDateStr);
-		    Date divorceDate = new SimpleDateFormat("dd MMM yyyy").parse(divorceDateStr);  
-		    
-		    if(divorceDate.compareTo(marriageDate) > 0)
-		    	return true;
-		    
+
+			Date date = new SimpleDateFormat("dd MMM yyyy").parse(dateStr);
+			Date todayDate = new Date();
+			if(todayDate.compareTo(date) > 0)
+				return true;
+
 			return false;
 		} catch (ParseException e) {
 			e.printStackTrace();
-			
+
 			return false;
-		}  
-	}	
+		}
+	}
 }

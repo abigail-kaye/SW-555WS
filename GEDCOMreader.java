@@ -315,7 +315,7 @@ public class GEDCOMreader {
 
 	private static void printfErrors(HashMap<String, HashMap<String, Object>> indiTable,
 			HashMap<String, HashMap<String, Object>> famTable) {
-		HashMap<String, Object> temp;
+		HashMap<String, Object> temp, ind_temp;
 		String tag;
 		GEDCOMValidator validator = new GEDCOMValidator();
 
@@ -324,6 +324,15 @@ public class GEDCOMreader {
 		for (Integer i : indArr) {
 			tag = "I" + i;
 			temp = indiTable.get(tag);
+
+			if (!validator.isDateBeforeCurrentDate((String) temp.get("BIRT"))) {
+				System.out.println("ERROR: INDIVIDUAL: US03: " + tag + ": Born after today");
+			}
+
+			if (!validator.isDateBeforeCurrentDate((String) temp.get("DEAT"))) {
+				System.out.println("ERROR: INDIVIDUAL: US03: " + tag + ": Died after today");
+			}
+
 
 			if (!validator.isDeathDateValid((String) temp.get("BIRT"), (String) temp.get("DEAT"))) {
 				System.out.println("ERROR: INDIVIDUAL: US03: " + tag + ": Died " + temp.get("DEAT") + " before born "
@@ -336,6 +345,25 @@ public class GEDCOMreader {
 		for (Integer i : famArr) {
 			tag = "F" + i;
 			temp = famTable.get(tag);
+
+			if (!validator.isDateBeforeCurrentDate((String) temp.get("MARR"))) {
+				System.out.println("ERROR: FAMILY: US04: " + tag + ": Married after today");
+			}
+
+			if (!validator.isDateBeforeCurrentDate((String) temp.get("DIV"))) {
+				System.out.println("ERROR: FAMILY: US04: " + tag + ": Divorced after today");
+			}
+
+
+			String[] result = {(String) temp.get("HUSB"), (String) temp.get("WIFE")};
+			for (String ind : result) {
+				if (!validator.isBirthDateBeforeMarriageDate((String) indiTable.get(ind).get("BIRT"), (String) temp.get("MARR"))) {
+					System.out.println("ERROR: INDIVIDUAL: US03: " + ind + ": Married " + temp.get("MARR") + " before birthday "
+							+ indiTable.get(ind).get("BIRT"));
+				}
+			}
+
+
 
 			if (!validator.isDivorceAfterMarriage((String) temp.get("MARR"), (String) temp.get("DIV"))) {
 				System.out.println("ERROR: FAMILY: US04: " + tag + ": Divorced " + temp.get("DIV") + " before marriage "
