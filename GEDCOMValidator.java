@@ -3,6 +3,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;  
 
 public class GEDCOMValidator {
+	
 	/**
 	 * Birth should occur before death of an individual
 	 * 
@@ -11,7 +12,7 @@ public class GEDCOMValidator {
 	 */
 	public boolean isDeathDateValid(String birthDateStr, String deathDateStr) {
 		try {
-			if(deathDateStr == null || deathDateStr == "")
+			if(deathDateStr == null || deathDateStr == "" || birthDateStr.equals("invalid") || deathDateStr.equals("invalid"))
 				return true;
 			
 		    Date birthDate = new SimpleDateFormat("dd MMM yyyy").parse(birthDateStr);
@@ -55,14 +56,13 @@ public class GEDCOMValidator {
 	 */
 	public boolean isDateBeforeCurrentDate(String dateStr) {
 		try {
-			if(dateStr == null || dateStr == "")
+			if(dateStr == null || dateStr == "" || dateStr.equals("invalid"))
 				return true;
 
 			Date date = new SimpleDateFormat("dd MMM yyyy").parse(dateStr);
 			Date todayDate = new Date();
 			if(todayDate.compareTo(date) > 0)
 				return true;
-
 			return false;
 		} catch (ParseException e) {
 			e.printStackTrace();
@@ -70,4 +70,17 @@ public class GEDCOMValidator {
 			return false;
 		}
 	}
+	
+	/**
+	 * Person's age should be less than 150 years old
+	 * 
+	 * @param age - age of individual
+	 */
+	public boolean isOlderThan150(String age) {
+		if (age.equals("invalid") || age.equals("NA"))
+			return false;
+		return Integer.parseInt(age) > 150;
+	}
+	
+	
 }

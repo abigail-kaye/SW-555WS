@@ -14,11 +14,12 @@ public class GEDCOMreader {
 	private static ArrayList<String> dateList = new ArrayList<>(Arrays.asList(isDate)); // Array list of date tags
 	private static ArrayList<Integer> indArr = new ArrayList<>(); // Array list of individuals
 	private static ArrayList<Integer> famArr = new ArrayList<>(); // Array list of families
-	private static ArrayList<String> errors = new ArrayList<>(); // Array list of errors
 
 	private static HashMap<String, Integer> months = new HashMap<>(12); // Hashmap of month and number association
-	private static HashMap<String, HashMap<String, Object>> ind = new HashMap<>(5000); // Hashmap of information for each individual
-	private static HashMap<String, HashMap<String, Object>> fam = new HashMap<>(1000); // Hashmap of information for each family
+	private static HashMap<String, HashMap<String, Object>> ind = new HashMap<>(5000); // Hashmap of information for
+																						// each individual
+	private static HashMap<String, HashMap<String, Object>> fam = new HashMap<>(1000); // Hashmap of information for
+																						// each family
 
 	/**
 	 * Returns true if entered ID is unique
@@ -125,7 +126,7 @@ public class GEDCOMreader {
 		String month = date.split(" ")[1];
 		int day = Integer.parseInt(date.split(" ")[0]);
 
-		if (year > 2018 || year < 0) // Check year is not too large or too small
+		if (year > 9999 || year < 0) // Check year is not too large or too small
 			return false;
 		boolean flag = false;
 		for (String s : months.keySet()) { // Check if valid month
@@ -138,8 +139,8 @@ public class GEDCOMreader {
 			return false;
 		if (month.equals("FEB") && day > 28) // Check February end date
 			return false;
-		if ((month.equals("APR") || month.equals("JUN") || month.equals("SEP") || month.equals("NOV")) && day > 30) // Check months with 30 days
-			return false;
+		if ((month.equals("APR") || month.equals("JUN") || month.equals("SEP") || month.equals("NOV")) && day > 30)
+			return false; // C
 		return true;
 	}
 
@@ -274,25 +275,12 @@ public class GEDCOMreader {
 			for (Integer i : indArr) {
 				tag = "I" + i; // Get ID of individual
 				temp = table.get(tag); // Get information of individual
-				int calculated_age = Integer.parseInt(calcAge(temp)); // Calculate age of individual
-
 				System.out.println(String.format("%5s %25s %6s %15s %3s %5s %15s %20s %20s", tag, temp.get("NAME"), // Print
 																													// information
-						temp.get("SEX"), temp.get("BIRT"), String.valueOf(calculated_age), isAlive(temp),
+						temp.get("SEX"), temp.get("BIRT"), calcAge(temp), isAlive(temp),
 						temp.get("DEAT") != null ? temp.get("DEAT") : "NA", // Check if individual has died and write
 																			// correct death date
 						getChildren(temp.get("FAMS")), getSpouse(temp.get("FAMS"), temp.get("SEX"))));
-				if (calculated_age > 150) { // Check if individual is older than 150 years old (dead or alive)
-					String e; // Error string
-					if (temp.get("DEAT") == null) // Choose which error to display based on living status
-						e = ("ERROR: INDIVIDUAL: US07: " + tag + ":  More than 150 years old - Birth "
-								+ (String) temp.get("BIRT"));
-					else
-						e = ("ERROR: INDIVIDUAL: US07: " + tag + ":  More than 150 years old at death - Birth "
-								+ (String) temp.get("BIRT") + ": Death " + temp.get("DEAT"));
-					errors.add(e);
-				}
-
 			}
 		}
 
@@ -325,19 +313,34 @@ public class GEDCOMreader {
 			tag = "I" + i;
 			temp = indiTable.get(tag);
 
-			if (!validator.isDateBeforeCurrentDate((String) temp.get("BIRT"))) {
-				System.out.println("ERROR: INDIVIDUAL: US03: " + tag + ": Born after today");
-			}
+			if (!validator.isDateBeforeCurrentDate((String) temp.get("BIRT")))
+				System.out.println("ERROR: INDIVIDUAL: US01: " + tag + ": Born after today");
 
-			if (!validator.isDateBeforeCurrentDate((String) temp.get("DEAT"))) {
-				System.out.println("ERROR: INDIVIDUAL: US03: " + tag + ": Died after today");
-			}
+			if (!validator.isDateBeforeCurrentDate((String) temp.get("DEAT")))
+				System.out.println("ERROR: INDIVIDUAL: US01: " + tag + ": Died after today");
 
-
-			if (!validator.isDeathDateValid((String) temp.get("BIRT"), (String) temp.get("DEAT"))) {
+			if (!validator.isDeathDateValid((String) temp.get("BIRT"), (String) temp.get("DEAT")))
 				System.out.println("ERROR: INDIVIDUAL: US03: " + tag + ": Died " + temp.get("DEAT") + " before born "
 						+ temp.get("BIRT"));
+
+			if (validator.isOlderThan150(calcAge(temp))) { // Check if individual is older than 150 years old (dead or
+															// alive)
+				if (temp.get("DEAT") == null) // Choose which error to display based on living status
+					System.out.println("ERROR: INDIVIDUAL: US07: " + tag + ":  More than 150 years old - Birth "
+							+ (String) temp.get("BIRT"));
+				else
+					System.out
+							.println("ERROR: INDIVIDUAL: US07: " + tag + ":  More than 150 years old at death - Birth "
+									+ (String) temp.get("BIRT") + ": Death " + temp.get("DEAT"));
 			}
+
+			if (temp.get("BIRT").equals("invalid"))
+				System.out.println("ERROR: INDIVIDUAL: US42: " + tag + " Birth date in wrong format");
+			if (temp.get("DEAT") != null) {
+				if (temp.get("DEAT").equals("invalid"))
+					System.out.println("ERROR: INDIVIDUAL: US42: " + tag + " Death date in wrong format");
+			}
+
 		}
 
 		Collections.sort(famArr);
@@ -346,29 +349,31 @@ public class GEDCOMreader {
 			tag = "F" + i;
 			temp = famTable.get(tag);
 
-			if (!validator.isDateBeforeCurrentDate((String) temp.get("MARR"))) {
-				System.out.println("ERROR: FAMILY: US04: " + tag + ": Married after today");
-			}
+			if (!validator.isDateBeforeCurrentDate((String) temp.get("MARR")))
+				System.out.println("ERROR: FAMILY: US01: " + tag + ": Married after today");
 
-			if (!validator.isDateBeforeCurrentDate((String) temp.get("DIV"))) {
-				System.out.println("ERROR: FAMILY: US04: " + tag + ": Divorced after today");
-			}
+			if (!validator.isDateBeforeCurrentDate((String) temp.get("DIV")))
+				System.out.println("ERROR: FAMILY: US01: " + tag + ": Divorced after today");
 
-
-			String[] result = {(String) temp.get("HUSB"), (String) temp.get("WIFE")};
+			String[] result = { (String) temp.get("HUSB"), (String) temp.get("WIFE") };
 			for (String ind : result) {
-				if (!validator.isBirthDateBeforeMarriageDate((String) indiTable.get(ind).get("BIRT"), (String) temp.get("MARR"))) {
-					System.out.println("ERROR: INDIVIDUAL: US03: " + ind + ": Married " + temp.get("MARR") + " before birthday "
-							+ indiTable.get(ind).get("BIRT"));
-				}
+				if (!validator.isBirthDateBeforeMarriageDate((String) indiTable.get(ind).get("BIRT"),
+						(String) temp.get("MARR")))
+					System.out.println("ERROR: INDIVIDUAL: US02: " + ind + ": Married " + temp.get("MARR")
+							+ " before birthday " + indiTable.get(ind).get("BIRT"));
 			}
-
-
-
-			if (!validator.isDivorceAfterMarriage((String) temp.get("MARR"), (String) temp.get("DIV"))) {
+			if (!validator.isDivorceAfterMarriage((String) temp.get("MARR"), (String) temp.get("DIV")))
 				System.out.println("ERROR: FAMILY: US04: " + tag + ": Divorced " + temp.get("DIV") + " before marriage "
 						+ temp.get("MARR"));
+
+			if (temp.get("MARR").equals("invalid"))
+				System.out.println("ERROR: FAMILY: US42: " + tag + " Marriage date in wrong format");
+
+			if (temp.get("DIV") != null) {
+				if (temp.get("DIV").equals("invalid"))
+					System.out.println("ERROR: FAMILY: US42: " + tag + " Divorce date in wrong format");
 			}
+
 		}
 	}
 
@@ -391,7 +396,7 @@ public class GEDCOMreader {
 	}
 
 	public static void main(String[] args) {
-		File fileName = new File("Kaye_Abigail_testFile.txt");
+		File fileName = new File("ErrorFile.txt");
 		fillMonthHashMap();
 		String dateType = "";
 		String ind_key = "";
@@ -421,7 +426,8 @@ public class GEDCOMreader {
 																						// list
 									ind.put(ind_key, new HashMap<>()); // Create new line item for individual
 								} else {
-									System.out.println("ERROR: US22: Individual ID " + ind_key + " is not unique"); // Print error if ID is not unique
+									// Print error if ID is not unique
+									System.out.println("ERROR: US22: Individual ID " + ind_key + " is not unique");
 									return;
 								}
 							} else if (tag.equals("FAM")) { // Get family information
@@ -503,9 +509,6 @@ public class GEDCOMreader {
 		System.out.println("Families");
 		printfTable(fam, "FAM");
 		System.out.println("\n");
-		for (String s : errors) { // Print errors
-			System.out.println(s);
-		}
 
 		printfErrors(ind, fam);
 	}
