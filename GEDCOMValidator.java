@@ -3,6 +3,33 @@ import java.text.SimpleDateFormat;
 import java.util.Date;  
 
 public class GEDCOMValidator {
+
+	/**
+	 * noDate should return true if date is empty or null
+	 *
+	 * @param dateStr -  date
+	 */
+	private boolean noDate(String dateStr) {
+		return dateStr == null || dateStr.equals("");
+	}
+
+	/**
+	 * EarlyDate should occur before LateDate
+	 *
+	 * @param earlyDateStr - early date
+	 * @param lateDateStr - late date
+	 */
+	private boolean compareDate(String earlyDateStr, String lateDateStr) {
+		try {
+			Date earlyDate = new SimpleDateFormat("dd MMM yyyy").parse(earlyDateStr);
+			Date lateDate = new SimpleDateFormat("dd MMM yyyy").parse(lateDateStr);
+			return (lateDate.compareTo(earlyDate) >= 0);
+		} catch (ParseException e) {
+			e.printStackTrace();
+			return false;
+		}
+	}
+
 	/**
 	 * Birth should occur before death of an individual
 	 * 
@@ -10,22 +37,9 @@ public class GEDCOMValidator {
 	 * @param deathDateStr - Death date
 	 */
 	public boolean isDeathDateValid(String birthDateStr, String deathDateStr) {
-		try {
-			if(deathDateStr == null || deathDateStr == "")
-				return true;
-			
-		    Date birthDate = new SimpleDateFormat("dd MMM yyyy").parse(birthDateStr);
-		    Date deathDate = new SimpleDateFormat("dd MMM yyyy").parse(deathDateStr);  
-		    
-		    if(deathDate.compareTo(birthDate) >= 0)
-		    	return true;
-		    
-			return false;
-		} catch (ParseException e) {
-			e.printStackTrace();
-			
-			return false;
-		}  
+		if (noDate(deathDateStr))
+			return true;
+		return compareDate(birthDateStr, deathDateStr);
 	}
 	
 	/**
@@ -35,7 +49,9 @@ public class GEDCOMValidator {
 	 * @param divorceDateStr - Divorce date
 	 */
 	public boolean isDivorceAfterMarriage(String marriageDateStr, String divorceDateStr) {
-		return isDeathDateValid(marriageDateStr, divorceDateStr);
+		if (noDate(divorceDateStr))
+			return true;
+		return compareDate(marriageDateStr, divorceDateStr);
 	}
 
 	/**
@@ -45,7 +61,9 @@ public class GEDCOMValidator {
 	 * @param marriageDateStr - Marriage date
 	 */
 	public boolean isBirthDateBeforeMarriageDate(String birthDateStr, String marriageDateStr) {
-		return isDeathDateValid(birthDateStr, marriageDateStr);
+		if (noDate(marriageDateStr))
+			return true;
+		return compareDate(birthDateStr, marriageDateStr);
 	}
 
 	/**
@@ -55,7 +73,7 @@ public class GEDCOMValidator {
 	 */
 	public boolean isDateBeforeCurrentDate(String dateStr) {
 		try {
-			if(dateStr == null || dateStr == "")
+			if (noDate(dateStr))
 				return true;
 
 			Date date = new SimpleDateFormat("dd MMM yyyy").parse(dateStr);
