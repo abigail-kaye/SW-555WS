@@ -1,6 +1,10 @@
 import java.io.*;
 import java.util.*;
 import java.util.Calendar;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 
 public class GEDCOMreader {
 
@@ -10,12 +14,12 @@ public class GEDCOMreader {
 			"DIV" };
 	private static String[] lvlTwo = { "DATE" };
 	private static String[] isDate = { "BIRT", "DEAT", "MARR", "DIV" }; // Array with tag's related to dates
+	public static String[] mon = { "JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC" };
 
 	private static ArrayList<String> dateList = new ArrayList<>(Arrays.asList(isDate)); // Array list of date tags
 	private static ArrayList<Integer> indArr = new ArrayList<>(); // Array list of individuals
 	private static ArrayList<Integer> famArr = new ArrayList<>(); // Array list of families
 
-	private static HashMap<String, Integer> months = new HashMap<>(12); // Hashmap of month and number association
 	private static HashMap<String, HashMap<String, Object>> ind = new HashMap<>(5000); // Hashmap of information for
 																						// each individual
 	private static HashMap<String, HashMap<String, Object>> fam = new HashMap<>(1000); // Hashmap of information for
@@ -115,72 +119,89 @@ public class GEDCOMreader {
 	}
 
 	/**
-	 * Check if date is in correct format and follows date rules
-	 * 
-	 * @param date - date to check (in string form)
-	 * @return true if date is correct; false if date is incorrect
+	 * Return true if date is valid
 	 */
-	private static boolean isValidDate(String date) {
-		/* Break string into respective parts */
-		int year = Integer.parseInt(date.split(" ")[2]);
-		String month = date.split(" ")[1];
-		int day = Integer.parseInt(date.split(" ")[0]);
-
-		if (year > 9999 || year < 0) // Check year is not too large or too small
+	public static boolean isValidDate(String date) {
+		int dateArr[] = createDateArr(date); 
+		
+		//Get original information
+		String Origmonth = date.split(" ")[1];
+		int Origday = Integer.parseInt(date.split(" ")[0]);
+		int Origyear = Integer.parseInt(date.split(" ")[2]);
+		
+		if (dateArr == null) //Check dateArr was created sucessfully
 			return false;
-		boolean flag = false;
-		for (String s : months.keySet()) { // Check if valid month
-			if (s.equals(month))
-				flag = true;
-		}
-		if (flag == false)
+		if (dateArr[2] > 9999) //Check year is within bounds
 			return false;
-		if (day > 31 || day < 1) // Check if day is within normal bounds
-			return false;
-		if (month.equals("FEB") && day > 28) // Check February end date
-			return false;
-		if ((month.equals("APR") || month.equals("JUN") || month.equals("SEP") || month.equals("NOV")) && day > 30)
-			return false; // C
-		return true;
+		if (dateArr[1] == Origday && mon[dateArr[0]].equals(Origmonth) && dateArr[2] == Origyear) //Check original information matches new date
+			return true;
+		return false;
 	}
-
+	
 	/**
-	 * Returns age (in string form) of individual
-	 * 
-	 * @param temp - individual to check
+	 * Return (string) age of individual
 	 */
-	private static String calcAge(HashMap<String, Object> temp) {
-
+	public static String calcAge(HashMap<String, Object> temp) {
 		/* Accounts for incorrect date format */
 		if ((String) temp.get("DEAT") == "invalid")
 			return "NA";
 		if ((String) temp.get("BIRT") == "invalid")
 			return "NA";
 
-		/* Split date into year, month, day string */
-		int birthYear = Integer.parseInt(((String) temp.get("BIRT")).split(" ")[2]);
-		String monthString = (((String) temp.get("BIRT")).split(" ")[1]);
-		int birthDay = Integer.parseInt(((String) temp.get("BIRT")).split(" ")[0]);
-
-		Calendar now = Calendar.getInstance(); // Get current date
-		String deathDate = (String) temp.get("DEAT"); // Get death date
-
-		if (deathDate != null) { // Check if person has already died
-			int deathYear = Integer.parseInt(deathDate.split(" ")[2]); // Get death year
-			return String.valueOf(deathYear - birthYear); // Return age
+		int[] birthArr = createDateArr((String) temp.get("BIRT"));
+		int[] end = new int[3];
+		int age;
+		
+		if (!isAlive(temp)) //Check if user is dead
+			end = createDateArr((String) temp.get("DEAT"));
+		else {
+			//End date is today
+			Calendar c = Calendar.getInstance();
+			end[0] = c.get(Calendar.MONTH);
+			end[1] = c.get(Calendar.DAY_OF_MONTH);
+			end[2] = c.get(Calendar.YEAR);
 		}
-
-		int monthNum = months.get(monthString); // Get current month
-		if (now.get(Calendar.MONTH) < monthNum) // Check if birth month has already passed
-			return String.valueOf((Calendar.getInstance().get(Calendar.YEAR) - 1 - birthYear)); // Return age
-		else if (now.get(Calendar.MONTH) == monthNum) { // Check if birth month is this month
-			int currDay = now.get(Calendar.DAY_OF_MONTH); // Get current day
-			if (currDay < birthDay) // Check if birth day has not passed yet
-				return String.valueOf((Calendar.getInstance().get(Calendar.YEAR) - 1 - birthYear)); // Return age
-		}
-		return String.valueOf((Calendar.getInstance().get(Calendar.YEAR) - birthYear)); // Return age
+		
+		if (datePassed(birthArr,end)) //Check if birthday has passed this year
+			age = end[2] - birthArr[2];
+		else
+			age = end[2] - birthArr[2] - 1;
+		
+		return String.valueOf(age);
 	}
 
+	/**
+	 * Returns an integer array corresponding to the string passed to the function
+	 * in the form [day, month number, year]
+	 */
+	public static int[] createDateArr(String dateString) {
+		try {
+			Date date = new SimpleDateFormat("dd MMM yyyy").parse(dateString); //Parse string for information
+			Calendar c = Calendar.getInstance();
+			c.setTime(date);
+			
+			//Add elements to the array
+			int dateArr[] = { c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH), c.get(Calendar.YEAR) };
+			return dateArr;
+		} catch (ParseException e) {
+			return null; //Return null if problem parsing date
+		}
+	}
+
+	/**
+	 * Return true if date 1 has occured before date 2
+	 */
+	public static boolean datePassed(int[] date1, int[] date2) {
+		if (date1[0] < date2[0]) //Compare months
+			return true;
+		else if (date1[0] == date2[0]) {
+			if (date1[1] >= date2[1]) //Compare days if the months are the same
+				return true;
+			return false;
+		} else
+			return false;
+	}
+	
 	/**
 	 * Check if individual is alive
 	 * 
@@ -218,7 +239,7 @@ public class GEDCOMreader {
 		s = s.replace(", ]", "]");
 		return s;
 	}
-
+		
 	/**
 	 * Return string of
 	 * 
@@ -377,27 +398,9 @@ public class GEDCOMreader {
 		}
 	}
 
-	/**
-	 * Fill hashmap with month data
-	 */
-	public static void fillMonthHashMap() {
-		months.put("JAN", 0);
-		months.put("FEB", 1);
-		months.put("MAR", 2);
-		months.put("APR", 3);
-		months.put("MAY", 4);
-		months.put("JUN", 5);
-		months.put("JUL", 6);
-		months.put("AUG", 7);
-		months.put("SEP", 8);
-		months.put("OCT", 9);
-		months.put("NOV", 10);
-		months.put("DEC", 11);
-	}
 
 	public static void main(String[] args) {
-		File fileName = new File("ErrorFile.txt");
-		fillMonthHashMap();
+		File fileName = new File("Kaye_Abigail_testFile.txt");
 		String dateType = "";
 		String ind_key = "";
 		String fam_key = "";
