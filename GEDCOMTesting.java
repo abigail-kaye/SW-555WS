@@ -1,12 +1,14 @@
-import static org.junit.Assert.*;
+import org.junit.Test;
 
 import java.util.HashMap;
 
-import org.junit.Test;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 public class GEDCOMTesting {
 	GEDCOMValidator validator = new GEDCOMValidator();
-	
+	GEDCOMreader reader = new GEDCOMreader();
+
 	@Test
 	public void BirthBeforeDeath1()  {
 		//death after birth
@@ -128,5 +130,38 @@ public class GEDCOMTesting {
 		wife.put("BIRT", "01 JAN 2001");
 		
 		assertFalse(validator.isAgeValidForMarriage(husband, wife, "01 JAN 2013"));
+	}
+
+	@Test
+	public void isAgeOrderThan150_1()  {
+		//Age is less than 150
+		HashMap<String, Object> ind = new HashMap<>(1);
+		ind.put("BIRT", "01 JAN 2000");
+		ind.put("DEAT", "01 JAN 2001");
+		assertFalse(validator.isOlderThan150(GEDCOMreader.calcAge(ind)));
+	}
+
+	@Test
+	public void isAgeOrderThan150_2()  {
+		//Age is larger than 150
+		HashMap<String, Object> ind = new HashMap<>(1);
+		ind.put("BIRT", "01 JAN 1850");
+		assertTrue(validator.isOlderThan150(GEDCOMreader.calcAge(ind)));
+	}
+
+	@Test
+	public void isAgeExist_1()  {
+		//Age is not available.
+		HashMap<String, Object> ind = new HashMap<>(1);
+		assertFalse(validator.isAgeAvailable(GEDCOMreader.calcAge(ind)));
+	}
+
+	@Test
+	public void isAgeExist_2()  {
+		//Age is available.
+		HashMap<String, Object> ind = new HashMap<>(1);
+		ind.put("BIRT", "01 JAN 1850");
+		ind.put("DEAT", "01 JAN 1993");
+		assertTrue(validator.isAgeAvailable(GEDCOMreader.calcAge(ind)));
 	}
 }
