@@ -1,19 +1,12 @@
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-<<<<<<< HEAD
-import java.util.HashMap; 
-
-public class GEDCOMValidator {
-	GEDCOMHelper helper = new GEDCOMHelper();
-	
-=======
 import java.util.HashMap;
 import java.util.ArrayList;
 
 public class GEDCOMValidator {
+	GEDCOMHelper helper = new GEDCOMHelper();
 
->>>>>>> d15e1a7dd90f29acbbdd2f075b897691d5469bd9
 	/**
 	 * Birth should occur before death of an individual
 	 * 
@@ -21,27 +14,7 @@ public class GEDCOMValidator {
 	 * @param deathDateStr - Death date
 	 */
 	public boolean isDeathDateValid(String birthDateStr, String deathDateStr) {
-<<<<<<< HEAD
 		return helper.isDate1AfterDate2(birthDateStr, deathDateStr);
-=======
-		try {
-			if (deathDateStr == null || deathDateStr == "" || birthDateStr.equals("invalid")
-					|| deathDateStr.equals("invalid"))
-				return true;
-
-			Date birthDate = new SimpleDateFormat("dd MMM yyyy").parse(birthDateStr);
-			Date deathDate = new SimpleDateFormat("dd MMM yyyy").parse(deathDateStr);
-
-			if (deathDate.compareTo(birthDate) >= 0)
-				return true;
-
-			return false;
-		} catch (ParseException e) {
-			e.printStackTrace();
-
-			return false;
-		}
->>>>>>> d15e1a7dd90f29acbbdd2f075b897691d5469bd9
 	}
 
 	/**
@@ -96,7 +69,7 @@ public class GEDCOMValidator {
 			return false;
 		return Integer.parseInt(age) > 150;
 	}
-<<<<<<< HEAD
+
 	
 	/**
 	 * Husband in family should be male and wife in family should be female
@@ -137,7 +110,7 @@ public class GEDCOMValidator {
 			return false;
 		}  
 	}
-=======
+
 
 	/**
 	 * Return if an individual has more than 15 siblings
@@ -150,5 +123,5 @@ public class GEDCOMValidator {
 		return arr.size() >= 15;
 	}
 
->>>>>>> d15e1a7dd90f29acbbdd2f075b897691d5469bd9
+
 }

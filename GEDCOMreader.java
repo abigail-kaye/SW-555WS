@@ -20,24 +20,24 @@ public class GEDCOMreader {
 	private static ArrayList<Integer> indArr = new ArrayList<>(); // Array list of individuals
 	private static ArrayList<Integer> famArr = new ArrayList<>(); // Array list of families
 
-<<<<<<< HEAD
 	public static HashMap<String, Integer> months = new HashMap<>(12); // Hashmap of month and number association
 	private static HashMap<String, HashMap<String, Object>> ind = new HashMap<>(5000); // Hashmap of information for
 																						// each individual
 	private static HashMap<String, HashMap<String, Object>> fam = new HashMap<>(1000); // Hashmap of information for
 																						// each family
-=======
-	public static HashMap<String, HashMap<String, Object>> ind = new HashMap<>(5000); // Information for each
-																						// individual
-	private static HashMap<String, HashMap<String, Object>> fam = new HashMap<>(1000); // Information for each family
->>>>>>> d15e1a7dd90f29acbbdd2f075b897691d5469bd9
-
-	/* Returns true if entered ID is unique */
+	/**
+	 * Returns true if entered ID is unique
+	 */
 	public static boolean isUniqueID(String id, HashMap<String, HashMap<String, Object>> map) {
 		return map.get(id) == null;
 	}
 
-	/* Finds tag within the input string */
+	/**
+	 * Finds tag within the input string
+	 * 
+	 * @param input - GEDCOM line that is being analyzed
+	 * @return tag of current line
+	 */
 	private static String findTag(String input) {
 		int n = isExceptionLineToo(input); // Identify if INDI or FAM line
 		if (n == 0)
@@ -56,9 +56,11 @@ public class GEDCOMreader {
 		}
 	}
 
-	/*
-	 * Check if line is INDI or FAM tag line Return 0 or 1 if in a special format
-	 * Return 2 otherwise
+	/**
+	 * Checks if line is in the special format Applies to INDI and FAM lines only
+	 * 
+	 * @param input - GEDCOM line that is being analyzed
+	 * @return 0 or 1 if it a special format 2 otherwise
 	 */
 	private static int isExceptionLineToo(String input) {
 		if (input.substring(input.length() - 3).equals("FAM"))
@@ -68,7 +70,13 @@ public class GEDCOMreader {
 		return 2;
 	}
 
-	/* Find arguments within the current input line */
+	/**
+	 * Find any arguments within the current input line
+	 * 
+	 * @param input - GEDCOM line that is being analyzed
+	 * @param tag - tag of line being analyzed
+	 * @return extra line arguments null if error
+	 */
 	private static String findArgs(String input, String tag) {
 		if (isExceptionLineToo(input) > 1) { // Check if line is in special format
 			String s = input.substring(tag.length() + 2); // Return anything after tag
@@ -85,7 +93,13 @@ public class GEDCOMreader {
 			return null;
 	}
 
-	/* Check if tag is supported Return "Y" if tag is supported "N" otherwise */
+	/**
+	 * Check if tag is supported
+	 * 
+	 * @param lvl - line level
+	 * @param tag - tag to check
+	 * @return "Y" if tag is supported "N" if tag is not supported
+	 */
 	private static String isSupportedTag(int lvl, String tag) {
 		String[] toScan;
 		int n = 0;
@@ -104,7 +118,12 @@ public class GEDCOMreader {
 		return "N";
 	}
 
-	/* Return true if date is valid */
+	/**
+	 * Check if date is in correct format and follows date rules
+	 * 
+	 * @param date - date to check (in string form)
+	 * @return true if date is correct; false if date is incorrect
+	 */
 	public static boolean isValidDate(String date) {
 		int dateArr[] = createDateArr(date);
 
@@ -124,7 +143,11 @@ public class GEDCOMreader {
 		return false;
 	}
 
-	/* Return (string) age of individual */
+	/**
+	 * Returns age (in string form) of individual
+	 * 
+	 * @param temp - individual to check
+	 */
 	public static String calcAge(HashMap<String, Object> temp) {
 		/* Accounts for incorrect date format */
 		if ((String) temp.get("DEAT") == "invalid")
@@ -182,7 +205,12 @@ public class GEDCOMreader {
 			return false;
 	}
 
-	/* Return true if individual is alive */
+	/**
+	 * Check if individual is alive
+	 * 
+	 * @param temp- individual to check
+	 * @return true if individual is alive; false if individual is deceased
+	 */
 	private static boolean isAlive(HashMap<String, Object> temp) {
 		String deathDate = (String) temp.get("DEAT");
 		return deathDate == null;
@@ -200,7 +228,11 @@ public class GEDCOMreader {
 		return s;
 	}
 
-	/* Return arraylist of children */
+	/**
+	 * Return string of children
+	 * 
+	 * @param temp - family to check
+	 */
 	private static ArrayList getChildren(Object temp) {
 		if (temp == null) // Return NA if no children
 			return null;
@@ -215,7 +247,12 @@ public class GEDCOMreader {
 		return children;
 	}
 
-	/* Return arraylist of spouses for an individual */
+	/**
+	 * Return string of
+	 * 
+	 * @param temp - individual
+	 * @param sex - sex of individual
+	 */
 	private static ArrayList getSpouse(Object temp, Object sex) {
 		if (temp == null) // Return NA if no object
 			return null;
@@ -234,7 +271,9 @@ public class GEDCOMreader {
 		return spouse;
 	}
 
-	/* Return (string) name of individual */
+	/**
+	 * Return name of individual
+	 */
 	private static String getName(Object ID) {
 		return (String) ind.get(ID).get("NAME");
 	}
@@ -273,7 +312,13 @@ public class GEDCOMreader {
 			}
 		}
 	}
-	/* Print table regarding individuals and families */
+	
+	/**
+	 * Print table regarding individuals and families
+	 * 
+	 * @param table - (individual or family) table to print out
+	 * @param type - tag of table to print out out (INDI or FAM)
+	 */
 	private static void printfTable(HashMap<String, HashMap<String, Object>> table, String type) {
 		HashMap<String, Object> temp;
 		String tag;
@@ -390,7 +435,6 @@ public class GEDCOMreader {
 				if (temp.get("DIV").equals("invalid"))
 					System.out.println("ERROR: FAMILY: US42: " + tag + " Divorce date in wrong format");
 			}
-<<<<<<< HEAD
 			
 			if(!validator.isGenderValid(indiTable.get(temp.get("HUSB")), "M")){
 				System.out.println("ERROR: FAMILY: US21: " + tag + ": Husband in family should be male");
@@ -403,11 +447,27 @@ public class GEDCOMreader {
 			if(!validator.isAgeValidForMarriage(indiTable.get(temp.get("HUSB")), indiTable.get(temp.get("WIFE")), (String)temp.get("MARR"))){
 				System.out.println("ERROR: FAMILY: US10: " + tag + ": Marriage should be at least 14 years after birth of both spouses");
 			}
-=======
->>>>>>> d15e1a7dd90f29acbbdd2f075b897691d5469bd9
 		}
 	}
 
+	/**
+	 * Fill hashmap with month data
+	 */
+	public static void fillMonthHashMap() {
+		months.put("JAN", 0);
+		months.put("FEB", 1);
+		months.put("MAR", 2);
+		months.put("APR", 3);
+		months.put("MAY", 4);
+		months.put("JUN", 5);
+		months.put("JUL", 6);
+		months.put("AUG", 7);
+		months.put("SEP", 8);
+		months.put("OCT", 9);
+		months.put("NOV", 10);
+		months.put("DEC", 11);
+	}
+	
 	public static void main(String[] args) {
 		File fileName = new File("ErrorFile.txt");
 		String dateType = "";
