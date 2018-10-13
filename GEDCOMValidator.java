@@ -1,8 +1,10 @@
 import java.text.ParseException;
-import java.text.SimpleDateFormat;  
-import java.util.Date;  
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.HashMap; 
 
 public class GEDCOMValidator {
+	GEDCOMHelper helper = new GEDCOMHelper();
 	
 	/**
 	 * Birth should occur before death of an individual
@@ -11,24 +13,9 @@ public class GEDCOMValidator {
 	 * @param deathDateStr - Death date
 	 */
 	public boolean isDeathDateValid(String birthDateStr, String deathDateStr) {
-		try {
-			if(deathDateStr == null || deathDateStr == "" || birthDateStr.equals("invalid") || deathDateStr.equals("invalid"))
-				return true;
-			
-		    Date birthDate = new SimpleDateFormat("dd MMM yyyy").parse(birthDateStr);
-		    Date deathDate = new SimpleDateFormat("dd MMM yyyy").parse(deathDateStr);  
-		    
-		    if(deathDate.compareTo(birthDate) >= 0)
-		    	return true;
-		    
-			return false;
-		} catch (ParseException e) {
-			e.printStackTrace();
-			
-			return false;
-		}  
+		return helper.isDate1AfterDate2(birthDateStr, deathDateStr);
 	}
-	
+
 	/**
 	 * Marriage should occur before divorce of spouses, and divorce can only occur after marriage
 	 * 
@@ -36,7 +23,7 @@ public class GEDCOMValidator {
 	 * @param divorceDateStr - Divorce date
 	 */
 	public boolean isDivorceAfterMarriage(String marriageDateStr, String divorceDateStr) {
-		return isDeathDateValid(marriageDateStr, divorceDateStr);
+		return helper.isDate1AfterDate2(marriageDateStr, divorceDateStr);
 	}
 
 	/**
@@ -46,7 +33,7 @@ public class GEDCOMValidator {
 	 * @param marriageDateStr - Marriage date
 	 */
 	public boolean isBirthDateBeforeMarriageDate(String birthDateStr, String marriageDateStr) {
-		return isDeathDateValid(birthDateStr, marriageDateStr);
+		return helper.isDate1AfterDate2(birthDateStr, marriageDateStr);
 	}
 
 	/**
@@ -82,5 +69,43 @@ public class GEDCOMValidator {
 		return Integer.parseInt(age) > 150;
 	}
 	
+	/**
+	 * Husband in family should be male and wife in family should be female
+	 * 
+	 * @param input
+	 *            Husband record
+	 * @param input
+	 *            Wife record
+	*/
+	public boolean isGenderValid(HashMap<String, Object> record, String expectedGender) {
+		if(record.get("SEX").equals(expectedGender))
+			return true;
+		
+		return false;
+	}
 	
+	/**
+	 * Marriage should be at least 14 years after birth of both spouses (parents must be at least 14 years old)
+	 * 
+	 * @param input
+	 *            Husband record
+	 * @param input
+	 *            Wife record
+	*/
+	public boolean isAgeValidForMarriage(HashMap<String, Object> husband, HashMap<String, Object> wife, String marriageDateStr) {
+		try {
+			GEDCOMHelper helper = new GEDCOMHelper();
+			
+			Date marriageDate = new SimpleDateFormat("dd MMM yyyy").parse(marriageDateStr);
+			
+			if(helper.calcAgeAtDate(husband, marriageDate) < 14 || helper.calcAgeAtDate(wife, marriageDate) < 14)
+				return false;
+			
+			return true;
+		} catch (ParseException e) {
+			e.printStackTrace();
+			
+			return false;
+		}  
+	}
 }

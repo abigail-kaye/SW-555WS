@@ -15,7 +15,7 @@ public class GEDCOMreader {
 	private static ArrayList<Integer> indArr = new ArrayList<>(); // Array list of individuals
 	private static ArrayList<Integer> famArr = new ArrayList<>(); // Array list of families
 
-	private static HashMap<String, Integer> months = new HashMap<>(12); // Hashmap of month and number association
+	public static HashMap<String, Integer> months = new HashMap<>(12); // Hashmap of month and number association
 	private static HashMap<String, HashMap<String, Object>> ind = new HashMap<>(5000); // Hashmap of information for
 																						// each individual
 	private static HashMap<String, HashMap<String, Object>> fam = new HashMap<>(1000); // Hashmap of information for
@@ -303,7 +303,7 @@ public class GEDCOMreader {
 
 	private static void printfErrors(HashMap<String, HashMap<String, Object>> indiTable,
 			HashMap<String, HashMap<String, Object>> famTable) {
-		HashMap<String, Object> temp, ind_temp;
+		HashMap<String, Object> temp;
 		String tag;
 		GEDCOMValidator validator = new GEDCOMValidator();
 
@@ -373,7 +373,18 @@ public class GEDCOMreader {
 				if (temp.get("DIV").equals("invalid"))
 					System.out.println("ERROR: FAMILY: US42: " + tag + " Divorce date in wrong format");
 			}
+			
+			if(!validator.isGenderValid(indiTable.get(temp.get("HUSB")), "M")){
+				System.out.println("ERROR: FAMILY: US21: " + tag + ": Husband in family should be male");
+			}
+			
+			if(!validator.isGenderValid(indiTable.get(temp.get("WIFE")), "F")){
+				System.out.println("ERROR: FAMILY: US21: " + tag + ": Wife in family should be female");
+			}
 
+			if(!validator.isAgeValidForMarriage(indiTable.get(temp.get("HUSB")), indiTable.get(temp.get("WIFE")), (String)temp.get("MARR"))){
+				System.out.println("ERROR: FAMILY: US10: " + tag + ": Marriage should be at least 14 years after birth of both spouses");
+			}
 		}
 	}
 

@@ -3,3 +3,7 @@ out
 /GEDCOMreader.class
 .classpath
 .project
+/Helper.class
+/GEDCOMHelper.class
+GEDCOMTesting.class
+/GEDCOMValidator.class
