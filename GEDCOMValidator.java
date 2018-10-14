@@ -60,6 +60,15 @@ public class GEDCOMValidator {
 	}
 
 	/**
+	 * Person's age should available.
+	 *
+	 * @param age - age of individual
+	 */
+	public boolean isAgeAvailable(String age) {
+		return !((age.equals("invalid") || age.equals("NA")));
+	}
+
+	/**
 	 * Person's age should be less than 150 years old
 	 * 
 	 * @param age - age of individual

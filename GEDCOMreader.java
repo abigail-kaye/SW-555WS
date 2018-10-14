@@ -1,10 +1,8 @@
-import java.io.*;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.Calendar;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 
 public class GEDCOMreader {
 
@@ -152,7 +150,7 @@ public class GEDCOMreader {
 		/* Accounts for incorrect date format */
 		if ((String) temp.get("DEAT") == "invalid")
 			return "NA";
-		if ((String) temp.get("BIRT") == "invalid")
+		if ((String) temp.get("BIRT") == "invalid" || temp.get("BIRT") == null)
 			return "NA";
 
 		int[] birthArr = createDateArr((String) temp.get("BIRT"));
@@ -181,6 +179,8 @@ public class GEDCOMreader {
 	 */
 	public static int[] createDateArr(String dateString) {
 		try {
+			if (dateString == null)
+				return null;
 			Date date = new SimpleDateFormat("dd MMM yyyy").parse(dateString); // Parse string for information
 			Calendar c = Calendar.getInstance();
 			c.setTime(date);
@@ -382,6 +382,10 @@ public class GEDCOMreader {
 				System.out.println("ERROR: INDIVIDUAL: US03: " + tag + ": Died " + temp.get("DEAT") + " before born "
 						+ temp.get("BIRT"));
 
+			if (validator.isAgeAvailable(calcAge(temp))) {
+				System.out.println("ERROR: INDIVIDUAL: US27: " + tag + ":  Age is not available.");
+			}
+
 			if (validator.isOlderThan150(calcAge(temp))) {
 				if (temp.get("DEAT") == null) // Choose which error to display based on living status
 					System.out.println("ERROR: INDIVIDUAL: US07: " + tag + ":  More than 150 years old - Birth "
@@ -447,6 +451,8 @@ public class GEDCOMreader {
 			if(!validator.isAgeValidForMarriage(indiTable.get(temp.get("HUSB")), indiTable.get(temp.get("WIFE")), (String)temp.get("MARR"))){
 				System.out.println("ERROR: FAMILY: US10: " + tag + ": Marriage should be at least 14 years after birth of both spouses");
 			}
+
+
 		}
 	}
 
