@@ -34,6 +34,7 @@ public class GEDCOMValidator {
 	 * @param birthDateStr - Birth date
 	 * @param marriageDateStr - Marriage date
 	 */
+	
 	public boolean isBirthDateBeforeMarriageDate(String birthDateStr, String marriageDateStr) {
 		return helper.isDate1AfterDate2(birthDateStr, marriageDateStr);
 	}
@@ -97,11 +98,6 @@ public class GEDCOMValidator {
 	
 	/**
 	 * Marriage should be at least 14 years after birth of both spouses (parents must be at least 14 years old)
-	 * 
-	 * @param input
-	 *            Husband record
-	 * @param input
-	 *            Wife record
 	*/
 	public boolean isAgeValidForMarriage(HashMap<String, Object> husband, HashMap<String, Object> wife, String marriageDateStr) {
 		try {

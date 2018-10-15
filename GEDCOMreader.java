@@ -382,7 +382,7 @@ public class GEDCOMreader {
 				System.out.println("ERROR: INDIVIDUAL: US03: " + tag + ": Died " + temp.get("DEAT") + " before born "
 						+ temp.get("BIRT"));
 
-			if (validator.isAgeAvailable(calcAge(temp))) {
+			if (!validator.isAgeAvailable(calcAge(temp))) {
 				System.out.println("ERROR: INDIVIDUAL: US27: " + tag + ":  Age is not available.");
 			}
 
@@ -391,8 +391,7 @@ public class GEDCOMreader {
 					System.out.println("ERROR: INDIVIDUAL: US07: " + tag + ":  More than 150 years old - Birth "
 							+ (String) temp.get("BIRT"));
 				else
-					System.out
-							.println("ERROR: INDIVIDUAL: US07: " + tag + ":  More than 150 years old at death - Birth "
+					System.out.println("ERROR: INDIVIDUAL: US07: " + tag + ":  More than 150 years old at death - Birth "
 									+ (String) temp.get("BIRT") + ": Death " + temp.get("DEAT"));
 			}
 
@@ -475,7 +474,7 @@ public class GEDCOMreader {
 	}
 	
 	public static void main(String[] args) {
-		File fileName = new File("ErrorFile.txt");
+		File fileName = new File("Kaye_Abigail_testFile.txt");
 		String dateType = "";
 		String ind_key = "";
 		String fam_key = "";
