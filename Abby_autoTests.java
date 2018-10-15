@@ -17,7 +17,7 @@ class Abby_autoTests {
 	
 	private static HashMap<String, HashMap<String, Object>> largeMap1 = new HashMap<>(5);
 	
-	ArrayList<String> dates = new ArrayList<String>(6);
+	
 	
 	ArrayList<String> sib1 = null;
 	ArrayList<String> sib2 = new ArrayList<String>(5);
@@ -27,7 +27,7 @@ class Abby_autoTests {
 	
 	
 	//US 42: Reject illegitimate dates
-	void setupDates() {
+	void setupDates(ArrayList dates) {
 		dates.add("30 FEB 2018");
 		dates.add("-1 JAN 2018");
 		dates.add("28 MAR 20018");
@@ -36,6 +36,8 @@ class Abby_autoTests {
 		dates.add("2 MAY 2018");
 	}
 	void checkIsValidDate () {
+		ArrayList<String> dates = new ArrayList<String>(6);
+		setupDates(dates);
 		for (int i = 0; i < 5; i++) {
 			assertFalse(reader.isValidDate(dates.get(i)));
 		}
@@ -114,7 +116,7 @@ class Abby_autoTests {
 		reader = new GEDCOMreader();
 		validator = new GEDCOMValidator();
 		
-		setupDates();
+//		setupDates();
 		checkIsValidDate();
 		
 		setupLargeHashMap();
