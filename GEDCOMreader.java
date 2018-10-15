@@ -382,7 +382,7 @@ public class GEDCOMreader {
 				System.out.println("ERROR: INDIVIDUAL: US03: " + tag + ": Died " + temp.get("DEAT") + " before born "
 						+ temp.get("BIRT"));
 
-			if (validator.isAgeAvailable(calcAge(temp))) {
+			if (!validator.isAgeAvailable(calcAge(temp))) {
 				System.out.println("ERROR: INDIVIDUAL: US27: " + tag + ":  Age is not available.");
 			}
 
