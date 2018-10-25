@@ -44,6 +44,8 @@ public class GEDCOMHelper {
 		try {
 			if(date2Str == null || date2Str == "")
 				return true;
+			if(date1Str == null || date1Str == "")
+				return true;
 			
 		    Date date1 = new SimpleDateFormat("dd MMM yyyy").parse(date1Str);
 		    Date date2 = new SimpleDateFormat("dd MMM yyyy").parse(date2Str);  

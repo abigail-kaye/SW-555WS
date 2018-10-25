@@ -111,6 +111,28 @@ class Abby_autoTests {
  		assertFalse(reader.checkLastNames(id1, sib3));
  	}
 	
+ 	void checkMarrbeforeDeath() {
+ 		String marr1 = "5 JAN 2015";
+ 		String death1 = "10 JUN 2014";
+ 		String marr2 = "20 AUG 2016";
+ 		String death2 = "15 DEC 2017";
+ 		assertTrue(validator.isMarriageBeforeDeath(marr1, death2));
+ 		assertTrue(validator.isMarriageBeforeDeath(marr2, death2));
+ 		assertFalse(validator.isMarriageBeforeDeath(marr1, death1));
+ 		assertFalse(validator.isMarriageBeforeDeath(marr2, death1));		
+ 	}
+ 	
+ 	void checkDivbeforeDeath() {
+ 		String div1 = "5 JAN 2015";
+ 		String death1 = "10 JUN 2014";
+ 		String div2 = "20 AUG 2016";
+ 		String death2 = "15 DEC 2017";
+ 		assertTrue(validator.isDivorceBeforeDeath(div1, death2));
+ 		assertTrue(validator.isDivorceBeforeDeath(div2, death2));
+ 		assertFalse(validator.isDivorceBeforeDeath(div1, death1));
+ 		assertFalse(validator.isDivorceBeforeDeath(div2, death1));		
+ 	}
+ 	
  	@Test
 	void test() {
 		reader = new GEDCOMreader();
@@ -128,7 +150,8 @@ class Abby_autoTests {
 		setupLastName();
 		checkLastName();
 		
-		
+		checkMarrbeforeDeath();
+		checkDivbeforeDeath();
 	}
 }
 

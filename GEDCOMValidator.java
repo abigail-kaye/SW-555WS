@@ -39,6 +39,16 @@ public class GEDCOMValidator {
 		return helper.isDate1AfterDate2(birthDateStr, marriageDateStr);
 	}
 
+	
+	public boolean isMarriageBeforeDeath(String marriageDateStr, String deathDateStr) {
+		return helper.isDate1AfterDate2(marriageDateStr, deathDateStr);
+	}
+	
+	public boolean isDivorceBeforeDeath(String divorceDateStr, String deathDateStr) {
+		return helper.isDate1AfterDate2(divorceDateStr, deathDateStr);
+	}
+	
+	
 	/**
 	 * Date should be before today's date
 	 *
