@@ -19,7 +19,7 @@ public class GEDCOMreader {
 	private static ArrayList<Integer> famArr = new ArrayList<>(); // Array list of families
 
 	public static HashMap<String, Integer> months = new HashMap<>(12); // Hashmap of month and number association
-	private static HashMap<String, HashMap<String, Object>> ind = new HashMap<>(5000); // Hashmap of information for
+	public static HashMap<String, HashMap<String, Object>> ind = new HashMap<>(5000); // Hashmap of information for
 																						// each individual
 	private static HashMap<String, HashMap<String, Object>> fam = new HashMap<>(1000); // Hashmap of information for
 																						// each family
@@ -220,12 +220,8 @@ public class GEDCOMreader {
 	private static String printArr(ArrayList arr) {
 		if (arr == null)
 			return "NA";
-		String s = "[";
-		for (int i = 0; i < arr.size() - 1; i++) {
-			s += arr.get(i) + ",";
-		}
-		s += arr.get(arr.size() - 1) + "]";
-		return s;
+		else
+			return arr.toString();
 	}
 
 	/**
@@ -242,7 +238,10 @@ public class GEDCOMreader {
 
 		for (Object famNum : famList) {
 			ArrayList childrenGot = (ArrayList) fam.get(famNum).get("CHIL"); // Get all children in 1 family
-			children.addAll(childrenGot); // Add children to children array list
+//			System.out.println("Fam: " + famNum);
+//			System.out.println("Child: " + childrenGot);
+			if (childrenGot != null)
+				children.addAll(childrenGot); // Add children to children array list
 		}
 		return children;
 	}
@@ -381,7 +380,17 @@ public class GEDCOMreader {
 			if (!validator.isDeathDateValid((String) temp.get("BIRT"), (String) temp.get("DEAT")))
 				System.out.println("ERROR: INDIVIDUAL: US03: " + tag + ": Died " + temp.get("DEAT") + " before born "
 						+ temp.get("BIRT"));
-
+			
+//			String tag2 = "F" + i;
+//			System.out.println("Tag: "+ tag + "Marr: " + famTable.get(tag2).get("MARR") + "Death: " + temp.get("DEAT"));
+//			if (!validator.isMarriageBeforeDeath((String) famTable.get(tag2).get("MARR"), (String) temp.get("DEAT")))
+//				System.out.println("ERROR: INDIVIDUAL: US05: " + tag + ": Died " + temp.get("DEAT") + " before death "
+//						+ temp.get("MARR"));
+//				
+//			if (!validator.isDivorceBeforeDeath((String) famTable.get(tag2).get("DIV"), (String) temp.get("DEAT")))
+//				System.out.println("ERROR: INDIVIDUAL: US06: " + tag + ": Died " + temp.get("DEAT") + " before divorce "
+//						+ temp.get("DIV"));
+				
 			if (!validator.isAgeAvailable(calcAge(temp))) {
 				System.out.println("ERROR: INDIVIDUAL: US27: " + tag + ":  Age is not available.");
 			}
@@ -428,6 +437,26 @@ public class GEDCOMreader {
 				System.out.println("ERROR: FAMILY: US04: " + tag + ": Divorced " + temp.get("DIV") + " before marriage "
 						+ temp.get("MARR"));
 
+			String wiDeat = (String) indiTable.get(temp.get("WIFE")).get("DEAT");
+			String husDeat = (String) indiTable.get(temp.get("HUSB")).get("DEAT");
+			if (!validator.isMarriageBeforeDeath((String) temp.get("MARR"), wiDeat)){
+				System.out.println("ERROR: INDIVIDUAL: US05: " + tag + ": Died " + wiDeat + " before married "
+						+ temp.get("MARR"));
+			}
+			if (!validator.isMarriageBeforeDeath((String) temp.get("MARR"), husDeat)){
+				System.out.println("ERROR: INDIVIDUAL: US05: " + tag + ": Died " + husDeat + " before married "
+						+ temp.get("MARR"));
+			}
+			
+			if (!validator.isMarriageBeforeDeath((String) temp.get("DIV"), wiDeat)){
+				System.out.println("ERROR: INDIVIDUAL: US06: " + tag + ": Died " + wiDeat + " before divorced "
+						+ temp.get("DIV"));
+			}
+			if (!validator.isMarriageBeforeDeath((String) temp.get("DIV"), husDeat)){
+				System.out.println("ERROR: INDIVIDUAL: US06: " + tag + ": Died " + husDeat + " before divorced "
+						+ temp.get("DIV"));
+			}
+			
 			if (validator.tooManySib((ArrayList) temp.get("CHIL")))
 				System.out.println("ERROR: FAMILY: US15: " + tag + " Has more than 15 siblings");
 
@@ -451,7 +480,22 @@ public class GEDCOMreader {
 				System.out.println("ERROR: FAMILY: US10: " + tag + ": Marriage should be at least 14 years after birth of both spouses");
 			}
 
-
+			ArrayList children = (ArrayList) temp.get("CHIL");
+			if(children != null) {
+				for (Object childID : children) {
+					if(!validator.isChildBornAfterMarriage((String) indiTable.get(childID).get("BIRT"), (String) temp.get("MARR"), (String) temp.get("DIV"))){
+						System.out.println("ERROR: FAMILY: US08: " + tag + ": Child - " + (String)childID + " born before marriage of parents or after 9 months of their divorce");
+					}
+				}
+			}
+			
+			if(children != null) {
+				for (Object childID : children) {
+					if(!validator.isChildBornBeforeParentsDeath((String) indiTable.get(childID).get("BIRT"), wiDeat, husDeat)){
+						System.out.println("ERROR: FAMILY: US09: " + tag + ": Child - " + (String)childID + " born after death of mother or after 9 months of father death");
+					}
+				}
+			}
 		}
 	}
 
@@ -474,7 +518,7 @@ public class GEDCOMreader {
 	}
 	
 	public static void main(String[] args) {
-		File fileName = new File("Kaye_Abigail_testFile.txt");
+		File fileName = new File("ErrorFile.txt");
 		String dateType = "";
 		String ind_key = "";
 		String fam_key = "";
