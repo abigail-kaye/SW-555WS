@@ -3,6 +3,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.ArrayList;
+import java.util.Calendar;
 
 public class GEDCOMValidator {
 	GEDCOMHelper helper = new GEDCOMHelper();
@@ -14,7 +15,7 @@ public class GEDCOMValidator {
 	 * @param deathDateStr - Death date
 	 */
 	public boolean isDeathDateValid(String birthDateStr, String deathDateStr) {
-		return helper.isDate1AfterDate2(birthDateStr, deathDateStr);
+		return helper.isDate2AfterDate1(birthDateStr, deathDateStr);
 	}
 
 	/**
@@ -25,7 +26,7 @@ public class GEDCOMValidator {
 	 * @param divorceDateStr - Divorce date
 	 */
 	public boolean isDivorceAfterMarriage(String marriageDateStr, String divorceDateStr) {
-		return helper.isDate1AfterDate2(marriageDateStr, divorceDateStr);
+		return helper.isDate2AfterDate1(marriageDateStr, divorceDateStr);
 	}
 
 	/**
@@ -36,16 +37,16 @@ public class GEDCOMValidator {
 	 */
 	
 	public boolean isBirthDateBeforeMarriageDate(String birthDateStr, String marriageDateStr) {
-		return helper.isDate1AfterDate2(birthDateStr, marriageDateStr);
+		return helper.isDate2AfterDate1(birthDateStr, marriageDateStr);
 	}
 
 	
 	public boolean isMarriageBeforeDeath(String marriageDateStr, String deathDateStr) {
-		return helper.isDate1AfterDate2(marriageDateStr, deathDateStr);
+		return helper.isDate2AfterDate1(marriageDateStr, deathDateStr);
 	}
 	
 	public boolean isDivorceBeforeDeath(String divorceDateStr, String deathDateStr) {
-		return helper.isDate1AfterDate2(divorceDateStr, deathDateStr);
+		return helper.isDate2AfterDate1(divorceDateStr, deathDateStr);
 	}
 	
 	
@@ -138,5 +139,76 @@ public class GEDCOMValidator {
 		return arr.size() >= 15;
 	}
 
+	/**
+	 * Children should be born after marriage of parents (and not more than 9 months
+	 * after their divorce)
+	 * 
+	 * @param childBirthDateStr
+	 *            - Child Birth date
+	 * @param marriageDateStr
+	 *            - Marriage date
+	 * @param divorceDateStr
+	 *            - Divorce date
+	 */
+	public boolean isChildBornAfterMarriage(String childBirthDateStr, String marriageDateStr, String divorceDateStr) {
+		if (divorceDateStr == null || divorceDateStr == "")
+			return helper.isDate2AfterDate1(marriageDateStr, childBirthDateStr);
+		else {
+			try {
+				Date divorceDate = new SimpleDateFormat("dd MMM yyyy").parse(divorceDateStr);
 
+				Calendar c = Calendar.getInstance();
+				c.setTime(divorceDate);
+				c.add(Calendar.MONTH, 9);
+
+				return (helper.isDate2AfterDate1(marriageDateStr, childBirthDateStr) && helper
+						.isDate2AfterDate1(childBirthDateStr, new SimpleDateFormat("dd MMM yyyy").format(c.getTime())));
+			} catch (ParseException e) {
+				return false;
+			}
+		}
+	}
+
+	/**
+	 * Child should be born before death of mother and before 9 months after death
+	 * of father
+	 * 
+	 * @param childBirthDateStr
+	 *            - Child Birth date
+	 * @param motherDeathDateStr
+	 *            - Mother Death date
+	 * @param fatherDeathDateStr
+	 *            - Father Death date
+	 */
+	public boolean isChildBornBeforeParentsDeath(String childBirthDateStr, String motherDeathDateStr,
+			String fatherDeathDateStr) {
+		boolean isChildBornBeforeParentsDeath = true;
+
+		if ((motherDeathDateStr == null || motherDeathDateStr == "")
+				&& (fatherDeathDateStr == null || fatherDeathDateStr == ""))
+			return true;
+		else {
+			try {
+				if (motherDeathDateStr != null && motherDeathDateStr != "")
+					isChildBornBeforeParentsDeath = helper.isDate2AfterDate1(childBirthDateStr, motherDeathDateStr);
+
+				if (fatherDeathDateStr != null && fatherDeathDateStr != "") {
+					Date fatherDeathDate;
+
+					fatherDeathDate = new SimpleDateFormat("dd MMM yyyy").parse(fatherDeathDateStr);
+
+					Calendar c = Calendar.getInstance();
+					c.setTime(fatherDeathDate);
+					c.add(Calendar.MONTH, 9);
+
+					isChildBornBeforeParentsDeath = isChildBornBeforeParentsDeath && helper.isDate2AfterDate1(
+							childBirthDateStr, new SimpleDateFormat("dd MMM yyyy").format(c.getTime()));
+				}
+			} catch (ParseException e) {
+				return false;
+			}
+		}
+
+		return isChildBornBeforeParentsDeath;
+	}
 }

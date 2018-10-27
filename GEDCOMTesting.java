@@ -1,7 +1,9 @@
 import org.junit.Test;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -42,7 +44,7 @@ public class GEDCOMTesting {
 		String birthDate = "1 DEC 2000";
 		String deathDate = "1 DEC 2000";
 
-		assertTrue(validator.isDeathDateValid(birthDate, deathDate));
+		assertFalse(validator.isDeathDateValid(birthDate, deathDate));
 	}
 
 	@Test
@@ -267,5 +269,134 @@ public class GEDCOMTesting {
 		Object id1 = "I1";
 		assertTrue(reader.checkLastNames(id1, sib2));
 		assertFalse(reader.checkLastNames(id1, sib3));
+	}
+	
+	public void isChildBornAfterMarriage1() {
+		// Child born after marriage; no divorce
+		String childBirthDate = "01 JAN 2000";
+		String marriageDate = "01 JAN 1999";
+		String divorceDate = null;
+
+		assertTrue(validator.isChildBornAfterMarriage(childBirthDate, marriageDate, divorceDate));
+	}
+	
+	@Test
+	public void isChildBornAfterMarriage2() {
+		// Child born after marriage; before divorce
+		String childBirthDate = "01 JAN 2000";
+		String marriageDate = "01 JAN 1999";
+		String divorceDate = "01 FEB 2000";
+
+		assertTrue(validator.isChildBornAfterMarriage(childBirthDate, marriageDate, divorceDate));
+	}
+	
+	@Test
+	public void isChildBornAfterMarriage3() {
+		// Child born after marriage; after 4 months of divorce
+		String childBirthDate = "01 JAN 2000";
+		String marriageDate = "01 JAN 1999";
+		String divorceDate = "01 SEP 1999";
+
+		assertTrue(validator.isChildBornAfterMarriage(childBirthDate, marriageDate, divorceDate));
+	}
+	
+	@Test
+	public void isChildBornAfterMarriage4() {
+		// Child born after marriage; after 11 months of divorce
+		String childBirthDate = "01 JAN 2000";
+		String marriageDate = "01 JAN 1999";
+		String divorceDate = "01 FEB 1999";
+
+		assertFalse(validator.isChildBornAfterMarriage(childBirthDate, marriageDate, divorceDate));
+	}
+	
+	@Test
+	public void isChildBornAfterMarriage5() {
+		// Child born before marriage;
+		String childBirthDate = "01 JAN 2000";
+		String marriageDate = "05 JAN 2000";
+		String divorceDate = null;
+
+		assertFalse(validator.isChildBornAfterMarriage(childBirthDate, marriageDate, divorceDate));
+	}
+	
+	@Test
+	public void isChildBornBeforeParentsDeath1() {
+		// Child born; no death
+		String childBirthDate = "01 JAN 2000";
+		String motherDeathDate = null;
+		String fatherDeathDate = null;
+
+		assertTrue(validator.isChildBornBeforeParentsDeath(childBirthDate, motherDeathDate, fatherDeathDate));
+	}
+	
+	@Test
+	public void isChildBornBeforeParentsDeath2() {
+		// Child born before mother death; father is alive
+		String childBirthDate = "01 JAN 2000";
+		String motherDeathDate = "01 MAY 2000";
+		String fatherDeathDate = null;
+
+		assertTrue(validator.isChildBornBeforeParentsDeath(childBirthDate, motherDeathDate, fatherDeathDate));
+	}
+	
+	@Test
+	public void isChildBornBeforeParentsDeath3() {
+		// Child born before father death; mother is alive
+		String childBirthDate = "01 JAN 2000";
+		String motherDeathDate = null;
+		String fatherDeathDate = "01 MAY 2000";
+
+		assertTrue(validator.isChildBornBeforeParentsDeath(childBirthDate, motherDeathDate, fatherDeathDate));
+	}
+	
+	@Test
+	public void isChildBornBeforeParentsDeath4() {
+		// Child born after 4 months of father death; mother is alive
+		String childBirthDate = "01 JAN 2000";
+		String motherDeathDate = null;
+		String fatherDeathDate = "01 SEP 1999";
+
+		assertTrue(validator.isChildBornBeforeParentsDeath(childBirthDate, motherDeathDate, fatherDeathDate));
+	}
+	
+	@Test
+	public void isChildBornBeforeParentsDeath5() {
+		// Child born after 11 months of father death; mother is alive
+		String childBirthDate = "01 JAN 2000";
+		String motherDeathDate = null;
+		String fatherDeathDate = "01 FEB 1999";
+
+		assertFalse(validator.isChildBornBeforeParentsDeath(childBirthDate, motherDeathDate, fatherDeathDate));
+	}
+	
+	@Test
+	public void isChildBornBeforeParentsDeath6() {
+		// Child born after mother death; father is alive
+		String childBirthDate = "01 JAN 2000";
+		String motherDeathDate = "01 FEB 1999";
+		String fatherDeathDate = null;
+
+		assertFalse(validator.isChildBornBeforeParentsDeath(childBirthDate, motherDeathDate, fatherDeathDate));
+	}
+	
+	@Test
+	public void isChildBornBeforeParentsDeath7() {
+		// Child born after parents death
+		String childBirthDate = "01 JAN 2000";
+		String motherDeathDate = "01 NOV 1999";
+		String fatherDeathDate = "01 NOV 1999";
+
+		assertFalse(validator.isChildBornBeforeParentsDeath(childBirthDate, motherDeathDate, fatherDeathDate));
+	}
+	
+	@Test
+	public void isChildBornBeforeParentsDeath8() {
+		// Child born before mother death; after 2 months of father death
+		String childBirthDate = "01 JAN 2000";
+		String motherDeathDate = "01 NOV 2000";
+		String fatherDeathDate = "01 NOV 1999";
+
+		assertTrue(validator.isChildBornBeforeParentsDeath(childBirthDate, motherDeathDate, fatherDeathDate));
 	}
 }

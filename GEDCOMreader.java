@@ -480,7 +480,22 @@ public class GEDCOMreader {
 				System.out.println("ERROR: FAMILY: US10: " + tag + ": Marriage should be at least 14 years after birth of both spouses");
 			}
 
-
+			ArrayList children = (ArrayList) temp.get("CHIL");
+			if(children != null) {
+				for (Object childID : children) {
+					if(!validator.isChildBornAfterMarriage((String) indiTable.get(childID).get("BIRT"), (String) temp.get("MARR"), (String) temp.get("DIV"))){
+						System.out.println("ERROR: FAMILY: US08: " + tag + ": Child - " + (String)childID + " born before marriage of parents or after 9 months of their divorce");
+					}
+				}
+			}
+			
+			if(children != null) {
+				for (Object childID : children) {
+					if(!validator.isChildBornBeforeParentsDeath((String) indiTable.get(childID).get("BIRT"), wiDeat, husDeat)){
+						System.out.println("ERROR: FAMILY: US09: " + tag + ": Child - " + (String)childID + " born after death of mother or after 9 months of father death");
+					}
+				}
+			}
 		}
 	}
 

@@ -40,7 +40,7 @@ public class GEDCOMHelper {
 		return (cal.get(Calendar.YEAR) - birthYear); // Return age
 	}
 	
-	public boolean isDate1AfterDate2(String date1Str, String date2Str) {
+	public boolean isDate2AfterDate1(String date1Str, String date2Str) {
 		try {
 			if(date2Str == null || date2Str == "")
 				return true;
@@ -50,10 +50,14 @@ public class GEDCOMHelper {
 		    Date date1 = new SimpleDateFormat("dd MMM yyyy").parse(date1Str);
 		    Date date2 = new SimpleDateFormat("dd MMM yyyy").parse(date2Str);  
 		    
+		    return date2.after(date1);
+		    
+		    /*
 		    if(date2.compareTo(date1) >= 0)
 		    	return true;
 		    
 			return false;
+			*/
 		} catch (ParseException e) {
 			return false;
 		}
