@@ -105,11 +105,11 @@
 1 FAMC @F1@
 1 FAMS @F6@
 0 @I14@ INDI
-1 NAME TooManyChildren/Kaye/
+1 NAME TooOld/Kaye/
 2 SURN Kaye
 1 SEX M
 1 BIRT
-2 DATE 19 DEC 1996
+2 DATE 19 DEC 1796
 1 FAMC @F1@
 0 @I15@ INDI
 1 NAME TooManyChildren/Kaye/

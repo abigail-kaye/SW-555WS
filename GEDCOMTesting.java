@@ -265,6 +265,29 @@ public class GEDCOMTesting {
 		reader.ind = largeMap1;
 	}
 
+
+ 	void checkMarrbeforeDeath() {
+ 		String marr1 = "5 JAN 2015";
+ 		String death1 = "10 JUN 2014";
+ 		String marr2 = "20 AUG 2016";
+ 		String death2 = "15 DEC 2017";
+ 		assertTrue(validator.isMarriageBeforeDeath(marr1, death2));
+ 		assertTrue(validator.isMarriageBeforeDeath(marr2, death2));
+ 		assertFalse(validator.isMarriageBeforeDeath(marr1, death1));
+ 		assertFalse(validator.isMarriageBeforeDeath(marr2, death1));		
+ 	}
+ 	
+ 	void checkDivbeforeDeath() {
+ 		String div1 = "5 JAN 2015";
+ 		String death1 = "10 JUN 2014";
+ 		String div2 = "20 AUG 2016";
+ 		String death2 = "15 DEC 2017";
+ 		assertTrue(validator.isDivorceBeforeDeath(div1, death2));
+ 		assertTrue(validator.isDivorceBeforeDeath(div2, death2));
+ 		assertFalse(validator.isDivorceBeforeDeath(div1, death1));
+ 		assertFalse(validator.isDivorceBeforeDeath(div2, death1));		
+ 	}
+ 	
 	void checkLastName() {
 		assertTrue(reader.checkLastNames(new Object(), null));
 		Object id1 = "I1";

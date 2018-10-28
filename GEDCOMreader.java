@@ -552,7 +552,7 @@ public class GEDCOMreader {
 	}
 	
 	public static void main(String[] args) {
-		File fileName = new File("ErrorFile.txt");
+		File fileName = new File("Kaye_Abigail_testFile.txt");
 		String dateType = "";
 		String ind_key = "";
 		String fam_key = "";
