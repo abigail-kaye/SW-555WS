@@ -332,7 +332,9 @@ public class GEDCOMreader {
 			for (Integer i : indArr) {
 				tag = "I" + i; // Get ID of individual
 				temp = table.get(tag); // Get information of individual
-				String children = printArr(getChildren(temp.get("FAMS")));
+				if (temp == null) {
+					continue;
+				}				String children = printArr(sortSiblings(getChildren(temp.get("FAMS")),ind));
 				String spouse = printArr(getSpouse(temp.get("FAMS"), temp.get("SEX")));
 				System.out.println(String.format("%5s %25s %6s %15s %3s %5s %15s %20s %20s", tag, temp.get("NAME"),
 						temp.get("SEX"), temp.get("BIRT"), calcAge(temp), isAlive(temp),
@@ -352,7 +354,7 @@ public class GEDCOMreader {
 				temp = table.get(tag); // Get information of family
 				System.out.println(String.format("%5s %20s %20s %10s %20s %10s %20s %20s", tag, temp.get("MARR"),
 						temp.get("DIV") != null ? temp.get("DIV") : "NA", temp.get("HUSB"), getName(temp.get("HUSB")),
-						temp.get("WIFE"), getName(temp.get("WIFE")), temp.get("CHIL"))); // Print information
+						temp.get("WIFE"), getName(temp.get("WIFE")), sortSiblings((ArrayList<String>)temp.get("CHIL"), ind))); // Print information
 			}
 		}
 	}
@@ -516,6 +518,38 @@ public class GEDCOMreader {
 		months.put("NOV", 10);
 		months.put("DEC", 11);
 	}
+
+	/**
+	 * Print table regarding individuals and families
+	 *
+	 * @param children - children array
+	 * @param indTable - individual table to lookup information
+	 * @return sorted children array
+	 */
+
+	public static ArrayList<String> sortSiblings(ArrayList<String> children, HashMap<String, HashMap<String, Object>> indTable) {
+		if (children == null || children.isEmpty() )
+			return children;
+		Collections.sort(children, Comparator.comparing(o -> calcAge(indTable.get(o))));
+		return children;
+	}
+
+	/**
+	 * Print table regarding individuals and families
+	 *
+	 * @param individual - all individuals table
+	 * @return dead people
+	 */
+
+	public static HashMap<String, HashMap<String, Object>> deadPeople(HashMap<String, HashMap<String, Object>> individual) {
+		HashMap<String, HashMap<String, Object>> dead = new HashMap<>(5000);
+		for (String key : individual.keySet()) {
+			if (!isAlive(individual.get(key))) {
+				dead.put(key,individual.get(key));
+			}
+		}
+		return dead;
+	}
 	
 	public static void main(String[] args) {
 		File fileName = new File("ErrorFile.txt");
@@ -626,6 +660,9 @@ public class GEDCOMreader {
 
 		System.out.println("Individuals");
 		printfTable(ind, "INDI");
+		System.out.println("\n");
+		System.out.println("Deceased Individuals");
+		printfTable(deadPeople(ind), "INDI");
 		System.out.println("\n");
 		System.out.println("Families");
 		printfTable(fam, "FAM");
