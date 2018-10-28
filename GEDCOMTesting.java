@@ -2,6 +2,7 @@ import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Collections;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -398,5 +399,49 @@ public class GEDCOMTesting {
 		String fatherDeathDate = "01 NOV 1999";
 
 		assertTrue(validator.isChildBornBeforeParentsDeath(childBirthDate, motherDeathDate, fatherDeathDate));
+	}
+
+	@Test
+	public void isSiblingsSorted() {
+		// Children should be sorted from young to old.
+		ArrayList<String> children = new ArrayList<>();
+		ArrayList<String> children_new;
+		HashMap<String, HashMap<String, Object>> individual = new HashMap<>(5); // Hashmap of information for
+		HashMap<String, Object> child1 = new HashMap<>(5);
+		HashMap<String, Object> child2 = new HashMap<>(5);
+		HashMap<String, Object> child3 = new HashMap<>(5);
+		children.add("I1");
+		children.add("I2");
+		children.add("I3");
+		children_new = children;
+		Collections.reverse(children_new);
+		child1.put("BIRT", "01 JAN 2000");
+		child2.put("BIRT", "01 JAN 2001");
+		child3.put("BIRT", "01 JAN 2004");
+		individual.put("I1",child1);
+		individual.put("I2",child2);
+		individual.put("I3",child3);
+		assertTrue(reader.sortSiblings(children ,individual).equals(children_new));
+	}
+
+	@Test
+	public void isFindAllDeadPeople() {
+		// Children should be sorted from young to old.
+		HashMap<String, HashMap<String, Object>> individual = new HashMap<>(5); // Hashmap of information for
+		HashMap<String, Object> p1 = new HashMap<>(5);
+		HashMap<String, Object> p2 = new HashMap<>(5);
+		HashMap<String, Object> p3 = new HashMap<>(5);
+		ArrayList<String> dead = new ArrayList<>(2);
+		dead.add("I1");
+		dead.add("I3");
+		p1.put("DEAT", "01 JAN 2000");
+		p3.put("DEAT", "01 JAN 2004");
+		individual.put("I1",p1);
+		individual.put("I2",p2);
+		individual.put("I3",p3);
+		System.out.println(reader.deadPeople(individual).keySet());
+		System.out.println(dead);
+		ArrayList<String> keys = new ArrayList<>(reader.deadPeople(individual).keySet());
+		assertTrue(keys.equals(dead));
 	}
 }
