@@ -19,21 +19,18 @@ public class GEDCOMreader {
 	private static ArrayList<Integer> famArr = new ArrayList<>(); // Array list of families
 
 	public static HashMap<String, Integer> months = new HashMap<>(12); // Hashmap of month and number association
-	public static HashMap<String, HashMap<String, Object>> ind = new HashMap<>(5000); // Hashmap of information for
-																						// each individual
-	private static HashMap<String, HashMap<String, Object>> fam = new HashMap<>(1000); // Hashmap of information for
-																						// each family
-	/**
-	 * Returns true if entered ID is unique
-	 */
+	public static HashMap<String, HashMap<String, Object>> ind = new HashMap<>(5000); // Information for each individual
+	private static HashMap<String, HashMap<String, Object>> fam = new HashMap<>(1000); // Information for each family
+
+	/* Returns true if entered ID is unique */
 	public static boolean isUniqueID(String id, HashMap<String, HashMap<String, Object>> map) {
 		return map.get(id) == null;
 	}
 
 	/**
-	 * Finds tag within the input string
+	 * Find tag within the input string
 	 * 
-	 * @param input - GEDCOM line that is being analyzed
+	 * @param input - file line
 	 * @return tag of current line
 	 */
 	private static String findTag(String input) {
@@ -55,9 +52,10 @@ public class GEDCOMreader {
 	}
 
 	/**
-	 * Checks if line is in the special format Applies to INDI and FAM lines only
+	 * Checks if line is in the special format
+	 * Applies to INDI and FAM lines only
 	 * 
-	 * @param input - GEDCOM line that is being analyzed
+	 * @param input - file line
 	 * @return 0 or 1 if it a special format 2 otherwise
 	 */
 	private static int isExceptionLineToo(String input) {
@@ -71,8 +69,8 @@ public class GEDCOMreader {
 	/**
 	 * Find any arguments within the current input line
 	 * 
-	 * @param input - GEDCOM line that is being analyzed
-	 * @param tag - tag of line being analyzed
+	 * @param input - file input line
+	 * @param tag - tag of line
 	 * @return extra line arguments null if error
 	 */
 	private static String findArgs(String input, String tag) {
@@ -134,9 +132,8 @@ public class GEDCOMreader {
 			return false;
 		if (dateArr[2] > 9999) // Check year is within bounds
 			return false;
-		if (dateArr[1] == Origday && mon[dateArr[0]].equals(Origmonth) && dateArr[2] == Origyear) // Check original
-																									// information
-																									// matches new date
+		// Check original information matches new date
+		if (dateArr[1] == Origday && mon[dateArr[0]].equals(Origmonth) && dateArr[2] == Origyear) 
 			return true;
 		return false;
 	}
@@ -174,7 +171,20 @@ public class GEDCOMreader {
 		return String.valueOf(age);
 	}
 
-	/* Return an integer array corresponding to the date passed to the function Form
+	public static Calendar getRecentDate() {
+		Calendar c = Calendar.getInstance();
+		Date d = new Date();
+
+		int day = c.get(Calendar.DAY_OF_MONTH);
+		int month = c.get(Calendar.MONTH);
+		int year = c.get(Calendar.YEAR);
+		day -= 30;
+		c.set(year, month, day);
+		return c;
+	}
+
+	/*
+	 * Return an integer array corresponding to the date passed to the function Form
 	 * [day, month number, year] JAN = 0
 	 */
 	public static int[] createDateArr(String dateString) {
@@ -195,20 +205,24 @@ public class GEDCOMreader {
 
 	/* Return true if date 1 has occurred before date 2 */
 	public static boolean datePassed(int[] date1, int[] date2) {
-		if (date1[0] < date2[0]) // Compare months
+		if (date1[2] < date2[2]) {
 			return true;
-		else if (date1[0] == date2[0]) {
-			if (date1[1] >= date2[1]) // Compare days if the months are the same
+		} else {
+			if (date1[0] < date2[0]) // Compare months
 				return true;
-			return false;
-		} else
-			return false;
+			else if (date1[0] == date2[0]) {
+				if (date1[1] >= date2[1]) // Compare days if the months are the same
+					return true;
+				return false;
+			} else
+				return false;
+		}
 	}
 
 	/**
 	 * Check if individual is alive
 	 * 
-	 * @param temp- individual to check
+	 * @param temp - individual to check
 	 * @return true if individual is alive; false if individual is deceased
 	 */
 	private static boolean isAlive(HashMap<String, Object> temp) {
@@ -238,8 +252,6 @@ public class GEDCOMreader {
 
 		for (Object famNum : famList) {
 			ArrayList childrenGot = (ArrayList) fam.get(famNum).get("CHIL"); // Get all children in 1 family
-//			System.out.println("Fam: " + famNum);
-//			System.out.println("Child: " + childrenGot);
 			if (childrenGot != null)
 				children.addAll(childrenGot); // Add children to children array list
 		}
@@ -247,8 +259,8 @@ public class GEDCOMreader {
 	}
 
 	/**
-	 * Return string of
-	 * 
+	 * Return spouse array
+	 * NOTE: USE ARR.TOSTRING() INSTEAD!!
 	 * @param temp - individual
 	 * @param sex - sex of individual
 	 */
@@ -301,21 +313,19 @@ public class GEDCOMreader {
 		return true;
 	}
 
-	/* Prints out date errors only
-	 * DOES NOT CHECK IF VALID DATE
-	 */
+	/* Prints out date errors only DOES NOT CHECK IF VALID DATE */
 	private static void printDateErrors(HashMap<String, Object> temp, Object ID) {
-		for (int i = 0; i<isDate.length; i++) {
+		for (int i = 0; i < isDate.length; i++) {
 			if (temp.get(isDate[i]) != null && temp.get(isDate[i]).equals("invalid")) {
 				System.out.println("ERROR: INDIVIDUAL: US42 " + ID + " " + isDate[i] + " is in the wrong format");
 			}
 		}
 	}
-	
+
 	/**
 	 * Print table regarding individuals and families
 	 * 
-	 * @param table - (individual or family) table to print out
+	 * @param table - table to print out
 	 * @param type - tag of table to print out out (INDI or FAM)
 	 */
 	private static void printfTable(HashMap<String, HashMap<String, Object>> table, String type) {
@@ -334,7 +344,8 @@ public class GEDCOMreader {
 				temp = table.get(tag); // Get information of individual
 				if (temp == null) {
 					continue;
-				}				String children = printArr(sortSiblings(getChildren(temp.get("FAMS")),ind));
+				}
+				String children = printArr(sortSiblings(getChildren(temp.get("FAMS")), ind));
 				String spouse = printArr(getSpouse(temp.get("FAMS"), temp.get("SEX")));
 				System.out.println(String.format("%5s %25s %6s %15s %3s %5s %15s %20s %20s", tag, temp.get("NAME"),
 						temp.get("SEX"), temp.get("BIRT"), calcAge(temp), isAlive(temp),
@@ -354,7 +365,8 @@ public class GEDCOMreader {
 				temp = table.get(tag); // Get information of family
 				System.out.println(String.format("%5s %20s %20s %10s %20s %10s %20s %20s", tag, temp.get("MARR"),
 						temp.get("DIV") != null ? temp.get("DIV") : "NA", temp.get("HUSB"), getName(temp.get("HUSB")),
-						temp.get("WIFE"), getName(temp.get("WIFE")), sortSiblings((ArrayList<String>)temp.get("CHIL"), ind))); // Print information
+						temp.get("WIFE"), getName(temp.get("WIFE")),
+						sortSiblings((ArrayList<String>) temp.get("CHIL"), ind))); // Print information
 			}
 		}
 	}
@@ -382,17 +394,7 @@ public class GEDCOMreader {
 			if (!validator.isDeathDateValid((String) temp.get("BIRT"), (String) temp.get("DEAT")))
 				System.out.println("ERROR: INDIVIDUAL: US03: " + tag + ": Died " + temp.get("DEAT") + " before born "
 						+ temp.get("BIRT"));
-			
-//			String tag2 = "F" + i;
-//			System.out.println("Tag: "+ tag + "Marr: " + famTable.get(tag2).get("MARR") + "Death: " + temp.get("DEAT"));
-//			if (!validator.isMarriageBeforeDeath((String) famTable.get(tag2).get("MARR"), (String) temp.get("DEAT")))
-//				System.out.println("ERROR: INDIVIDUAL: US05: " + tag + ": Died " + temp.get("DEAT") + " before death "
-//						+ temp.get("MARR"));
-//				
-//			if (!validator.isDivorceBeforeDeath((String) famTable.get(tag2).get("DIV"), (String) temp.get("DEAT")))
-//				System.out.println("ERROR: INDIVIDUAL: US06: " + tag + ": Died " + temp.get("DEAT") + " before divorce "
-//						+ temp.get("DIV"));
-				
+
 			if (!validator.isAgeAvailable(calcAge(temp))) {
 				System.out.println("ERROR: INDIVIDUAL: US27: " + tag + ":  Age is not available.");
 			}
@@ -402,7 +404,8 @@ public class GEDCOMreader {
 					System.out.println("ERROR: INDIVIDUAL: US07: " + tag + ":  More than 150 years old - Birth "
 							+ (String) temp.get("BIRT"));
 				else
-					System.out.println("ERROR: INDIVIDUAL: US07: " + tag + ":  More than 150 years old at death - Birth "
+					System.out
+							.println("ERROR: INDIVIDUAL: US07: " + tag + ":  More than 150 years old at death - Birth "
 									+ (String) temp.get("BIRT") + ": Death " + temp.get("DEAT"));
 			}
 
@@ -411,7 +414,7 @@ public class GEDCOMreader {
 					System.out.println("ERROR: INDIVIDUAL: US16:" + tag + "'s son does not have the same last name");
 				}
 			}
-			
+
 			printDateErrors(temp, tag);
 		}
 
@@ -441,24 +444,24 @@ public class GEDCOMreader {
 
 			String wiDeat = (String) indiTable.get(temp.get("WIFE")).get("DEAT");
 			String husDeat = (String) indiTable.get(temp.get("HUSB")).get("DEAT");
-			if (!validator.isMarriageBeforeDeath((String) temp.get("MARR"), wiDeat)){
-				System.out.println("ERROR: INDIVIDUAL: US05: " + tag + ": Died " + wiDeat + " before married "
-						+ temp.get("MARR"));
+			if (!validator.isMarriageBeforeDeath((String) temp.get("MARR"), wiDeat)) {
+				System.out.println(
+						"ERROR: INDIVIDUAL: US05: " + tag + ": Died " + wiDeat + " before married " + temp.get("MARR"));
 			}
-			if (!validator.isMarriageBeforeDeath((String) temp.get("MARR"), husDeat)){
+			if (!validator.isMarriageBeforeDeath((String) temp.get("MARR"), husDeat)) {
 				System.out.println("ERROR: INDIVIDUAL: US05: " + tag + ": Died " + husDeat + " before married "
 						+ temp.get("MARR"));
 			}
-			
-			if (!validator.isMarriageBeforeDeath((String) temp.get("DIV"), wiDeat)){
-				System.out.println("ERROR: INDIVIDUAL: US06: " + tag + ": Died " + wiDeat + " before divorced "
-						+ temp.get("DIV"));
+
+			if (!validator.isMarriageBeforeDeath((String) temp.get("DIV"), wiDeat)) {
+				System.out.println(
+						"ERROR: INDIVIDUAL: US06: " + tag + ": Died " + wiDeat + " before divorced " + temp.get("DIV"));
 			}
-			if (!validator.isMarriageBeforeDeath((String) temp.get("DIV"), husDeat)){
+			if (!validator.isMarriageBeforeDeath((String) temp.get("DIV"), husDeat)) {
 				System.out.println("ERROR: INDIVIDUAL: US06: " + tag + ": Died " + husDeat + " before divorced "
 						+ temp.get("DIV"));
 			}
-			
+
 			if (validator.tooManySib((ArrayList) temp.get("CHIL")))
 				System.out.println("ERROR: FAMILY: US15: " + tag + " Has more than 15 siblings");
 
@@ -469,41 +472,45 @@ public class GEDCOMreader {
 				if (temp.get("DIV").equals("invalid"))
 					System.out.println("ERROR: FAMILY: US42: " + tag + " Divorce date in wrong format");
 			}
-			
-			if(!validator.isGenderValid(indiTable.get(temp.get("HUSB")), "M")){
+
+			if (!validator.isGenderValid(indiTable.get(temp.get("HUSB")), "M")) {
 				System.out.println("ERROR: FAMILY: US21: " + tag + ": Husband in family should be male");
 			}
-			
-			if(!validator.isGenderValid(indiTable.get(temp.get("WIFE")), "F")){
+
+			if (!validator.isGenderValid(indiTable.get(temp.get("WIFE")), "F")) {
 				System.out.println("ERROR: FAMILY: US21: " + tag + ": Wife in family should be female");
 			}
 
-			if(!validator.isAgeValidForMarriage(indiTable.get(temp.get("HUSB")), indiTable.get(temp.get("WIFE")), (String)temp.get("MARR"))){
-				System.out.println("ERROR: FAMILY: US10: " + tag + ": Marriage should be at least 14 years after birth of both spouses");
+			if (!validator.isAgeValidForMarriage(indiTable.get(temp.get("HUSB")), indiTable.get(temp.get("WIFE")),
+					(String) temp.get("MARR"))) {
+				System.out.println("ERROR: FAMILY: US10: " + tag
+						+ ": Marriage should be at least 14 years after birth of both spouses");
 			}
 
 			ArrayList children = (ArrayList) temp.get("CHIL");
-			if(children != null) {
+			if (children != null) {
 				for (Object childID : children) {
-					if(!validator.isChildBornAfterMarriage((String) indiTable.get(childID).get("BIRT"), (String) temp.get("MARR"), (String) temp.get("DIV"))){
-						System.out.println("ERROR: FAMILY: US08: " + tag + ": Child - " + (String)childID + " born before marriage of parents or after 9 months of their divorce");
+					if (!validator.isChildBornAfterMarriage((String) indiTable.get(childID).get("BIRT"),
+							(String) temp.get("MARR"), (String) temp.get("DIV"))) {
+						System.out.println("ERROR: FAMILY: US08: " + tag + ": Child - " + (String) childID
+								+ " born before marriage of parents or after 9 months of their divorce");
 					}
 				}
 			}
-			
-			if(children != null) {
+
+			if (children != null) {
 				for (Object childID : children) {
-					if(!validator.isChildBornBeforeParentsDeath((String) indiTable.get(childID).get("BIRT"), wiDeat, husDeat)){
-						System.out.println("ERROR: FAMILY: US09: " + tag + ": Child - " + (String)childID + " born after death of mother or after 9 months of father death");
+					if (!validator.isChildBornBeforeParentsDeath((String) indiTable.get(childID).get("BIRT"), wiDeat,
+							husDeat)) {
+						System.out.println("ERROR: FAMILY: US09: " + tag + ": Child - " + (String) childID
+								+ " born after death of mother or after 9 months of father death");
 					}
 				}
 			}
 		}
 	}
 
-	/**
-	 * Fill hashmap with month data
-	 */
+	/* Fill hashmap with month data */
 	public static void fillMonthHashMap() {
 		months.put("JAN", 0);
 		months.put("FEB", 1);
@@ -527,8 +534,9 @@ public class GEDCOMreader {
 	 * @return sorted children array
 	 */
 
-	public static ArrayList<String> sortSiblings(ArrayList<String> children, HashMap<String, HashMap<String, Object>> indTable) {
-		if (children == null || children.isEmpty() )
+	public static ArrayList<String> sortSiblings(ArrayList<String> children,
+			HashMap<String, HashMap<String, Object>> indTable) {
+		if (children == null || children.isEmpty())
 			return children;
 		Collections.sort(children, Comparator.comparing(o -> calcAge(indTable.get(o))));
 		return children;
@@ -541,16 +549,37 @@ public class GEDCOMreader {
 	 * @return dead people
 	 */
 
-	public static HashMap<String, HashMap<String, Object>> deadPeople(HashMap<String, HashMap<String, Object>> individual) {
+	public static HashMap<String, HashMap<String, Object>> deadPeople(
+			HashMap<String, HashMap<String, Object>> individual) {
 		HashMap<String, HashMap<String, Object>> dead = new HashMap<>(5000);
 		for (String key : individual.keySet()) {
 			if (!isAlive(individual.get(key))) {
-				dead.put(key,individual.get(key));
+				dead.put(key, individual.get(key));
 			}
 		}
 		return dead;
 	}
-	
+
+	public static HashMap<String, HashMap<String, Object>> recentBirthDeath(
+			HashMap<String, HashMap<String, Object>> individual, String type) {
+
+		HashMap<String, HashMap<String, Object>> map = new HashMap<>(5000);
+		Calendar recentDate = getRecentDate();
+		for (String key : individual.keySet()) {
+			HashMap<String, Object> person = individual.get(key);
+			String dateString = (String) person.get(type);
+			if (dateString != null) {
+				int[] dateArr = createDateArr(dateString);
+				Calendar dateCal = Calendar.getInstance();
+				dateCal.set(dateArr[2], dateArr[0], dateArr[1]);
+				if (recentDate.before(dateCal))
+					map.put(key, individual.get(key));
+			}
+		}
+		return map;
+
+	}
+
 	public static void main(String[] args) {
 		File fileName = new File("Kaye_Abigail_testFile.txt");
 		String dateType = "";
@@ -658,14 +687,23 @@ public class GEDCOMreader {
 			e.printStackTrace();
 		}
 
-		System.out.println("Individuals");
-		printfTable(ind, "INDI");
-		System.out.println("\n");
-		System.out.println("Deceased Individuals");
-		printfTable(deadPeople(ind), "INDI");
-		System.out.println("\n");
-		System.out.println("Families");
-		printfTable(fam, "FAM");
+		 System.out.println("Individuals");
+		 printfTable(ind, "INDI");
+		 System.out.println("\n");
+		 System.out.println("Families");
+		 printfTable(fam, "FAM");
+		 System.out.println("\n");
+		
+		 System.out.println("Deceased Individuals");
+		 printfTable(deadPeople(ind), "INDI");
+		 System.out.println("\n");
+		
+		 System.out.println("Recent Births");
+		 printfTable(recentBirthDeath(ind, "BIRT"), "INDI");
+		 System.out.println("\n");
+
+		System.out.println("Recent Deaths");
+		printfTable(recentBirthDeath(ind, "DEAT"), "INDI");
 		System.out.println("\n");
 
 		printfErrors(ind, fam);
