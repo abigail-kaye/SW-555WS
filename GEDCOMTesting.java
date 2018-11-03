@@ -469,6 +469,44 @@ public class GEDCOMTesting {
 	}
 	
 	@Test
+	public void findRecentBirths() {
+		HashMap<String, HashMap<String, Object>> individual = new HashMap<>(5); // Hashmap of information for
+		HashMap<String, Object> p1 = new HashMap<>(5);
+		HashMap<String, Object> p2 = new HashMap<>(5);
+		HashMap<String, Object> p3 = new HashMap<>(5);
+		ArrayList<String> birth = new ArrayList<>(2);
+		birth.add("I1");
+		birth.add("I3");
+		p1.put("BIRT", "1 NOV 2018");
+		p2.put("BIRT", "2 JUN 2004");
+		p3.put("BIRT", "20 OCT 2018");
+		individual.put("I1",p1);
+		individual.put("I2",p2);
+		individual.put("I3",p3);
+		ArrayList<String> keys = new ArrayList<>(reader.recentBirthDeath(individual,"BIRT").keySet());
+		assertTrue(keys.equals(birth));
+	}
+	
+	@Test
+	public void findRecentDeath() {
+		HashMap<String, HashMap<String, Object>> individual = new HashMap<>(5); // Hashmap of information for
+		HashMap<String, Object> p1 = new HashMap<>(5);
+		HashMap<String, Object> p2 = new HashMap<>(5);
+		HashMap<String, Object> p3 = new HashMap<>(5);
+		ArrayList<String> death = new ArrayList<>(2);
+		death.add("I1");
+		death.add("I3");
+		p1.put("DEAT", "1 NOV 2018");
+		p2.put("DEAT", "2 JUN 2004");
+		p3.put("DEAT", "20 OCT 2018");
+		individual.put("I1",p1);
+		individual.put("I2",p2);
+		individual.put("I3",p3);
+		ArrayList<String> keys = new ArrayList<>(reader.recentBirthDeath(individual,"DEAT").keySet());
+		assertTrue(keys.equals(death));
+	}
+	
+	@Test
 	public void isBirthDateOfSiblingValid1() {
 		// Same day
 		String sibling1BirthDateStr = "01 JAN 2000";
