@@ -1,5 +1,7 @@
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.Period;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.ArrayList;
@@ -210,5 +212,75 @@ public class GEDCOMValidator {
 		}
 
 		return isChildBornBeforeParentsDeath;
+	}
+	
+	/**
+	 * Birth dates of siblings should be more than 8 months apart or less than 2
+	 * days apart (twins may be born one day apart, e.g. 11:59 PM and 12:02 AM the
+	 * following calendar day)
+	 * 
+	 * @param sibling1BirthDateStr
+	 *            - Sibling 1 Birth date
+	 * @param sibling2BirthDateStr
+	 *            - Sibling 2 Death date
+	 */
+	public boolean isBirthDateOfSiblingValid(String sibling1BirthDateStr, String sibling2BirthDateStr) {
+		try {
+			Date sibling1BirthDate = new SimpleDateFormat("dd MMM yyyy").parse(sibling1BirthDateStr);
+			Date sibling2BirthDate = new SimpleDateFormat("dd MMM yyyy").parse(sibling2BirthDateStr);
+
+			if(sibling1BirthDate.after(sibling2BirthDate)) {
+				Date temp = sibling1BirthDate;
+				sibling2BirthDate = sibling1BirthDate;
+				sibling1BirthDate = temp;
+			}
+			
+			LocalDate sibling1BirthLocalDate = LocalDate
+					.parse(new SimpleDateFormat("yyyy-MM-dd").format(sibling1BirthDate));
+			LocalDate sibling2BirthLocalDate = LocalDate
+					.parse(new SimpleDateFormat("yyyy-MM-dd").format(sibling2BirthDate));
+
+			Period diff = Period.between(sibling1BirthLocalDate, sibling2BirthLocalDate);
+
+			if (diff.getYears() > 0)
+				return true;
+			else if (diff.getMonths() >= 7)
+				return true;
+			else if (diff.getDays() < 2 && diff.getMonths() == 0 && diff.getYears() == 0)
+				return true;
+			else
+				return false;
+		} catch (ParseException e) {
+			return false;
+		}
+
+		/*
+		 * boolean isBirthDateOfSiblingValid = true;
+		 * 
+		 * if (sibling == null || sibling.size() < 2) return isBirthDateOfSiblingValid;
+		 * else { for(int i = 0; i < sibling.size() - 1; i++) { Date sibling1Date = new
+		 * SimpleDateFormat("dd MMM yyyy").parse(sibling[i].get("BIRT"));
+		 * 
+		 * Calendar c = Calendar.getInstance(); c.setTime(fatherDeathDate);
+		 * c.add(Calendar.MONTH, 9); }
+		 */
+	}
+
+	/**
+	 * Siblings should not marry one another
+	 * 
+	 * @param personId
+	 *            - Person ID
+	 * @param siblingList
+	 *            - List of Sibling
+	 */
+	public boolean isSpouseSibling(ArrayList spouseList, ArrayList siblingList) {
+		if(spouseList != null) {
+			for(Object spouse : spouseList) {
+				if(siblingList.contains(spouse))
+					return true;
+			}
+		}
+		return false;
 	}
 }

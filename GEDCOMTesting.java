@@ -467,4 +467,123 @@ public class GEDCOMTesting {
 		ArrayList<String> keys = new ArrayList<>(reader.deadPeople(individual).keySet());
 		assertTrue(keys.equals(dead));
 	}
+	
+	public void isBirthDateOfSiblingValid1() {
+		// Same day
+		String sibling1BirthDateStr = "01 JAN 2000";
+		String sibling2BirthDateStr = "01 JAN 2000";
+
+		assertTrue(validator.isBirthDateOfSiblingValid(sibling1BirthDateStr, sibling2BirthDateStr));
+	}
+	
+	@Test
+	public void isBirthDateOfSiblingValid2() {
+		// next day
+		String sibling1BirthDateStr = "01 JAN 2000";
+		String sibling2BirthDateStr = "02 JAN 2000";
+
+		assertTrue(validator.isBirthDateOfSiblingValid(sibling1BirthDateStr, sibling2BirthDateStr));
+	}
+	
+	@Test
+	public void isBirthDateOfSiblingValid3() {
+		// after 2 days
+		String sibling1BirthDateStr = "01 JAN 2000";
+		String sibling2BirthDateStr = "03 JAN 2000";
+
+		assertFalse(validator.isBirthDateOfSiblingValid(sibling1BirthDateStr, sibling2BirthDateStr));
+	}
+	
+	@Test
+	public void isBirthDateOfSiblingValid4() {
+		// after 6 months
+		String sibling1BirthDateStr = "01 JAN 2000";
+		String sibling2BirthDateStr = "01 JUN 2000";
+
+		assertFalse(validator.isBirthDateOfSiblingValid(sibling1BirthDateStr, sibling2BirthDateStr));
+	}
+	
+	@Test
+	public void isBirthDateOfSiblingValid5() {
+		// after 10 months
+		String sibling1BirthDateStr = "01 JAN 2000";
+		String sibling2BirthDateStr = "06 OCT 2000";
+
+		assertTrue(validator.isBirthDateOfSiblingValid(sibling1BirthDateStr, sibling2BirthDateStr));
+	}
+	
+	@Test
+	public void isBirthDateOfSiblingValid6() {
+		// after 8 months
+		String sibling1BirthDateStr = "01 JAN 2000";
+		String sibling2BirthDateStr = "01 AUG 2000";
+
+		assertTrue(validator.isBirthDateOfSiblingValid(sibling1BirthDateStr, sibling2BirthDateStr));
+	}
+	
+	@Test
+	public void isBirthDateOfSiblingValid7() {
+		// after 6 months
+		String sibling1BirthDateStr = "01 JAN 2000";
+		String sibling2BirthDateStr = "02 JUN 2000";
+
+		assertFalse(validator.isBirthDateOfSiblingValid(sibling1BirthDateStr, sibling2BirthDateStr));
+	}
+	
+	@Test
+	public void isBirthDateOfSiblingValid8() {
+		// after 3 years
+		String sibling1BirthDateStr = "01 JAN 2000";
+		String sibling2BirthDateStr = "02 JUN 2003";
+
+		assertTrue(validator.isBirthDateOfSiblingValid(sibling1BirthDateStr, sibling2BirthDateStr));
+	}
+	
+	@Test
+	public void isSpouseSibling1() {
+		ArrayList<String> spouse = new ArrayList<String>();
+		ArrayList<String> sibling = new ArrayList<String>();
+		
+		spouse.add("I1");
+		sibling.add("I2");
+		sibling.add("I3");
+		
+		assertFalse(validator.isSpouseSibling(spouse, sibling));
+	}
+
+	@Test
+	public void isSpouseSibling2() {
+		ArrayList<String> spouse = new ArrayList<String>();
+		ArrayList<String> sibling = new ArrayList<String>();
+		
+		sibling.add("I2");
+		sibling.add("I3");
+		
+		assertFalse(validator.isSpouseSibling(spouse, sibling));
+	}
+	
+	@Test
+	public void isSpouseSibling3() {
+		ArrayList<String> spouse = new ArrayList<String>();
+		ArrayList<String> sibling = new ArrayList<String>();
+		
+		spouse.add("I1");
+		spouse.add("I4");
+		sibling.add("I2");
+		sibling.add("I3");
+		
+		assertFalse(validator.isSpouseSibling(spouse, sibling));
+	}
+	
+	@Test
+	public void isSpouseSibling4() {
+		ArrayList<String> spouse = new ArrayList<String>();
+		ArrayList<String> sibling = new ArrayList<String>();
+		
+		spouse.add("I2");
+		sibling.add("I2");
+		sibling.add("I3");
+		
+		assertTrue(validator.isSpouseSibling(spouse, sibling));
+	}
 }
