@@ -468,6 +468,7 @@ public class GEDCOMTesting {
 		assertTrue(keys.equals(dead));
 	}
 	
+	@Test
 	public void isBirthDateOfSiblingValid1() {
 		// Same day
 		String sibling1BirthDateStr = "01 JAN 2000";
