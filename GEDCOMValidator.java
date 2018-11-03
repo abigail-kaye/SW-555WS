@@ -283,6 +283,11 @@ public class GEDCOMValidator {
 			}
 		}
 		return false;
+=======
+
+	public boolean isNameBirthUniq(HashMap<String, Object> individual, Set<String> set) {
+		return !set.contains(individual.get("NAME").toString() + individual.get("BIRT").toString());
+>>>>>>> xw-last-sprint
 	}
 
 	public boolean isNameBirthUniq(HashMap<String, Object> individual, Set<String> set) {

@@ -621,6 +621,45 @@ public class GEDCOMTesting {
 		sibling.add("I3");
 
 		assertTrue(validator.isSpouseSibling(spouse, sibling));
+=======
+
+	@Test
+	public void findLivingMarried() {
+		HashMap<String, HashMap<String, Object>> individual = new HashMap<>(5); // Hashmap of information for
+		HashMap<String, HashMap<String, Object>> fam = new HashMap<>(5);
+		HashMap<String, HashMap<String, Object>> results = new HashMap<>(5);
+		HashMap<String, Object> p1 = new HashMap<>(5);
+		HashMap<String, Object> p2 = new HashMap<>(5);
+		HashMap<String, Object> f1 = new HashMap<>(5);
+		p1.put("DEAT", "1 NOV 2018");
+		p1.put("BIRT", "1 NOV 1966");
+		p2.put("BIRT", "2 JUN 2004");
+		f1.put("HUSB", "I1");
+		f1.put("WIFE", "I2");
+		individual.put("I1",p1);
+		individual.put("I2",p2);
+		fam.put("f1", f1);
+		results.put("I2", p2);
+		assertTrue(reader.livingMarried(individual, fam).equals(results));
+	}
+
+	@Test
+	public void isNameBirthdayUnionUniq() {
+		HashMap<String, Object> p1 = new HashMap<>(5);
+		HashMap<String, Object> p2 = new HashMap<>(5);
+		HashMap<String, Object> p3 = new HashMap<>(5);
+		p1.put("BIRT", "1 NOV 1966");
+		p2.put("BIRT", "2 JUN 2004");
+		p3.put("BIRT", "1 NOV 1966");
+		p1.put("NAME", "Abi");
+		p2.put("NAME", "Abi");
+		p3.put("NAME", "Abi");
+		Set<String> set = new HashSet<>();
+		set.add(p1.get("NAME").toString() + p1.get("BIRT").toString());
+		assertTrue(validator.isNameBirthUniq(p2, set));
+		set.add(p2.get("NAME").toString() + p2.get("BIRT").toString());
+		assertTrue(!validator.isNameBirthUniq(p3, set));
+>>>>>>> xw-last-sprint
 	}
 
 	@Test
