@@ -4,6 +4,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Set;
 
 public class GEDCOMValidator {
 	GEDCOMHelper helper = new GEDCOMHelper();
@@ -210,5 +211,9 @@ public class GEDCOMValidator {
 		}
 
 		return isChildBornBeforeParentsDeath;
+	}
+
+	public boolean isNameBirthUniq(HashMap<String, Object> individual, Set<String> set) {
+		return !set.contains(individual.get("NAME").toString() + individual.get("BIRT").toString());
 	}
 }

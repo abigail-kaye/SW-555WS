@@ -379,7 +379,7 @@ public class GEDCOMreader {
 		GEDCOMValidator validator = new GEDCOMValidator();
 
 		Collections.sort(indArr);
-
+		Set<String> setOfInd = new HashSet<>();
 		/* Loop through individual tables */
 		for (Integer i : indArr) {
 			tag = "I" + i;
@@ -414,6 +414,12 @@ public class GEDCOMreader {
 					System.out.println("ERROR: INDIVIDUAL: US16:" + tag + "'s son does not have the same last name");
 				}
 			}
+
+			if (!validator.isNameBirthUniq(temp, setOfInd)) {
+				System.out.println("ERROR: INDIVIDUAL: US23:" + tag + "'s name and birthday union is not unique");
+			}
+			setOfInd.add(temp.get("NAME").toString() + temp.get("BIRT").toString());
+
 
 			printDateErrors(temp, tag);
 		}
@@ -580,6 +586,35 @@ public class GEDCOMreader {
 
 	}
 
+
+	/**
+	 * Find out all living married people
+	 *
+	 * @param individual - all individuals table
+	 * @param family - all family table
+	 * @return living married people
+	 */
+
+	public static HashMap<String, HashMap<String, Object>> livingMarried(HashMap<String, HashMap<String, Object>> individual, HashMap<String, HashMap<String, Object>> family) {
+		HashMap<String, HashMap<String, Object>> livingMarriedPeople = new HashMap<>(5000);
+		Set<Object> hash_Set = new HashSet<>();
+		for (String key : family.keySet()) {
+			if (family.get(key).get("DIV") == null) {
+				hash_Set.add(family.get(key).get("HUSB"));
+				hash_Set.add(family.get(key).get("WIFE"));
+			}
+		}
+		Iterator<Object> itr = hash_Set.iterator();
+		while(itr.hasNext()){
+			String key = (String) itr.next();
+			HashMap<String, Object> temp = individual.get(key);
+			if (isAlive(temp)) {
+				livingMarriedPeople.put(key, temp);
+			}
+		}
+		return livingMarriedPeople;
+	}
+
 	public static void main(String[] args) {
 		File fileName = new File("Kaye_Abigail_testFile.txt");
 		String dateType = "";
@@ -704,6 +739,10 @@ public class GEDCOMreader {
 
 		System.out.println("Recent Deaths");
 		printfTable(recentBirthDeath(ind, "DEAT"), "INDI");
+		System.out.println("\n");
+
+		System.out.println("All living married people");
+		printfTable(livingMarried(ind, fam),"INDI");
 		System.out.println("\n");
 
 		printfErrors(ind, fam);
