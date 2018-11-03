@@ -507,6 +507,24 @@ public class GEDCOMreader {
 					}
 				}
 			}
+			
+			if(children != null && children.size() > 1) {
+				String[] childrenArray = new String[children.size()];
+				children.toArray(childrenArray);
+				for(int iC = 0; iC < childrenArray.length; iC++)
+					for(int iJ = iC + 1; iJ < childrenArray.length; iJ++)
+						if(!validator.isBirthDateOfSiblingValid((String) indiTable.get(childrenArray[iC]).get("BIRT"), (String) indiTable.get(childrenArray[iJ]).get("BIRT")))
+							System.out.println("ERROR: FAMILY: US13: " + tag + ": Sibling birth spacing between " + (String)childrenArray[iC] + " & " + (String)childrenArray[iJ] + " is not right");
+			}
+			
+			if(children != null && children.size() > 1) {
+				for (Object childID : children) {
+					ArrayList spouse = (ArrayList) getSpouse(indiTable.get(childID).get("FAMS"), indiTable.get(childID).get("SEX")) ;
+					if(validator.isSpouseSibling(spouse, children)){
+						System.out.println("ERROR: FAMILY: US18: " + tag + ": Child - " + (String)childID + " marry to sibling");
+					}
+				}
+			}
 		}
 	}
 
@@ -581,7 +599,7 @@ public class GEDCOMreader {
 	}
 
 	public static void main(String[] args) {
-		File fileName = new File("Kaye_Abigail_testFile.txt");
+		File fileName = new File("ErrorFile.txt");
 		String dateType = "";
 		String ind_key = "";
 		String fam_key = "";
