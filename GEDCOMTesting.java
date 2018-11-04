@@ -501,8 +501,7 @@ public class GEDCOMTesting {
 		ArrayList<String> keys = new ArrayList<>(reader.recentBirthDeath(individual,"DEAT").keySet());
 		assertTrue(keys.equals(death));
 	}
-<<<<<<< HEAD
-	
+
 	@Test
 	public void isBirthDateOfSiblingValid1() {
 		// Same day
@@ -615,14 +614,13 @@ public class GEDCOMTesting {
 	public void isSpouseSibling4() {
 		ArrayList<String> spouse = new ArrayList<String>();
 		ArrayList<String> sibling = new ArrayList<String>();
-		
+
 		spouse.add("I2");
 		sibling.add("I2");
 		sibling.add("I3");
-		
-		assertTrue(validator.isSpouseSibling(spouse, sibling));
-=======
 
+		assertTrue(validator.isSpouseSibling(spouse, sibling));
+	}
 	@Test
 	public void findLivingMarried() {
 		HashMap<String, HashMap<String, Object>> individual = new HashMap<>(5); // Hashmap of information for
@@ -659,6 +657,5 @@ public class GEDCOMTesting {
 		assertTrue(validator.isNameBirthUniq(p2, set));
 		set.add(p2.get("NAME").toString() + p2.get("BIRT").toString());
 		assertTrue(!validator.isNameBirthUniq(p3, set));
->>>>>>> xw-last-sprint
 	}
 }
