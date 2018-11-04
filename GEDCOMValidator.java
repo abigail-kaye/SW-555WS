@@ -215,6 +215,7 @@ public class GEDCOMValidator {
 		return isChildBornBeforeParentsDeath;
 	}
 
+<<<<<<< HEAD
 	/**
 	 * Birth dates of siblings should be more than 8 months apart or less than 2
 	 * days apart (twins may be born one day apart, e.g. 11:59 PM and 12:02 AM the

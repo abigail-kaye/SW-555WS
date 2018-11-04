@@ -503,6 +503,7 @@ public class GEDCOMTesting {
 	}
 
 	@Test
+<<<<<<< HEAD
 	public void isBirthDateOfSiblingValid1() {
 		// Same day
 		String sibling1BirthDateStr = "01 JAN 2000";
@@ -621,6 +622,7 @@ public class GEDCOMTesting {
 
 		assertTrue(validator.isSpouseSibling(spouse, sibling));
 	}
+
 	@Test
 	public void findLivingMarried() {
 		HashMap<String, HashMap<String, Object>> individual = new HashMap<>(5); // Hashmap of information for
