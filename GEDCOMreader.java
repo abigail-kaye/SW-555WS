@@ -586,7 +586,7 @@ public class GEDCOMreader {
 		for (String key : individual.keySet()) {
 			HashMap<String, Object> person = individual.get(key);
 			String dateString = (String) person.get(type);
-			if (dateString != null) {
+			if (dateString != null && !dateString.equals("invalid")) {
 				int[] dateArr = createDateArr(dateString);
 				Calendar dateCal = Calendar.getInstance();
 				dateCal.set(dateArr[2], dateArr[0], dateArr[1]);

@@ -47,7 +47,7 @@
 2 SURN Johnson
 1 SEX M
 1 BIRT
-2 DATE 26 FEB 2019
+2 DATE 31 OCT 2018
 1 FAMS @F3@
 0 @I7@ INDI
 1 NAME Will /Johnson/
@@ -112,11 +112,13 @@
 2 DATE 19 DEC 1796
 1 FAMC @F1@
 0 @I15@ INDI
-1 NAME TooManyChildren/Kaye/
+1 NAME RecentDeath/Kaye/
 2 SURN Kaye
 1 SEX M
 1 BIRT
 2 DATE 19 DEC 1996
+1 DEAT
+2 DATE 1 NOV 2018
 1 FAMC @F1@
 0 @I16@ INDI
 1 NAME TooManyChildren/Kaye/
