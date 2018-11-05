@@ -621,6 +621,7 @@ public class GEDCOMTesting {
 
 		assertTrue(validator.isSpouseSibling(spouse, sibling));
 	}
+
 	@Test
 	public void findLivingMarried() {
 		HashMap<String, HashMap<String, Object>> individual = new HashMap<>(5); // Hashmap of information for
