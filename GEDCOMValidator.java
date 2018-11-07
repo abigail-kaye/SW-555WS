@@ -6,6 +6,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Set;
 
 public class GEDCOMValidator {
 	GEDCOMHelper helper = new GEDCOMHelper();
@@ -213,7 +214,7 @@ public class GEDCOMValidator {
 
 		return isChildBornBeforeParentsDeath;
 	}
-	
+
 	/**
 	 * Birth dates of siblings should be more than 8 months apart or less than 2
 	 * days apart (twins may be born one day apart, e.g. 11:59 PM and 12:02 AM the
@@ -275,12 +276,17 @@ public class GEDCOMValidator {
 	 *            - List of Sibling
 	 */
 	public boolean isSpouseSibling(ArrayList spouseList, ArrayList siblingList) {
-		if(spouseList != null) {
-			for(Object spouse : spouseList) {
-				if(siblingList.contains(spouse))
+		if (spouseList != null) {
+			for (Object spouse : spouseList) {
+				if (siblingList.contains(spouse))
 					return true;
 			}
 		}
 		return false;
+	}
+
+
+	public boolean isNameBirthUniq(HashMap<String, Object> individual, Set<String> set) {
+		return !set.contains(individual.get("NAME").toString() + individual.get("BIRT").toString());
 	}
 }
