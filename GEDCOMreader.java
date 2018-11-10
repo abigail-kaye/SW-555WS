@@ -17,6 +17,8 @@ public class GEDCOMreader {
 	private static ArrayList<String> dateList = new ArrayList<>(Arrays.asList(isDate)); // Array list of date tags
 	private static ArrayList<Integer> indArr = new ArrayList<>(); // Array list of individuals
 	private static ArrayList<Integer> famArr = new ArrayList<>(); // Array list of families
+	private static ArrayList<Integer> badIndID = new ArrayList<>(); // Array list of individuals with same ID
+	private static ArrayList<Integer> badFamID = new ArrayList<>(); // Array list of families with same ID
 
 	public static HashMap<String, Integer> months = new HashMap<>(12); // Hashmap of month and number association
 	public static HashMap<String, HashMap<String, Object>> ind = new HashMap<>(5000); // Information for each individual
@@ -423,6 +425,10 @@ public class GEDCOMreader {
 
 			printDateErrors(temp, tag);
 		}
+		
+		for (Integer i : badIndID) {
+			System.out.println("ERROR: INDIVIDUAL: US22: I" + i + " is not a unique ID");
+		}
 
 		/* Loop through family array */
 		Collections.sort(famArr);
@@ -532,6 +538,9 @@ public class GEDCOMreader {
 				}
 			}
 		}
+		for (Integer i : badFamID) {
+			System.out.println("ERROR: FAMILY: US22: F" + i + " is not a unique ID");
+		}
 	}
 
 	/* Fill hashmap with month data */
@@ -634,13 +643,14 @@ public class GEDCOMreader {
 	}
 
 	public static void main(String[] args) {
-		File fileName = new File("ErrorFile.txt");
+		File fileName = new File("Kaye_Abigail_testFile.txt");
 		String dateType = "";
 		String ind_key = "";
 		String fam_key = "";
 		String type = "";
 		try {
 			Scanner s = new Scanner(fileName); // Scan file
+			boolean duplicateID = false;
 			while (s.hasNextLine()) {
 				String input = s.nextLine();
 				int lvl = Character.getNumericValue(input.charAt(0)); // Store level number
@@ -662,24 +672,25 @@ public class GEDCOMreader {
 									indArr.add(Integer.parseInt(ind_key.substring(1))); // Add individual ID to indArr
 																						// list
 									ind.put(ind_key, new HashMap<>()); // Create new line item for individual
+									duplicateID = false;
 								} else {
-									// Print error if ID is not unique
-									System.out.println("ERROR: US22: Individual ID " + ind_key + " is not unique");
-									return;
+									badIndID.add(Integer.parseInt(ind_key.substring(1)));
+									duplicateID = true;
 								}
 							} else if (tag.equals("FAM")) { // Get family information
 								fam_key = argu.replaceAll("@", "");
 								if (isUniqueID(fam_key, fam)) {
 									fam.put(fam_key, new HashMap<>());
 									famArr.add(Integer.parseInt(fam_key.substring(1)));
+									duplicateID = false;
 								} else {
-									System.out.println("Family ID " + fam_key + " is not unique");
-									return;
+									badFamID.add(Integer.parseInt(fam_key.substring(1)));
+									duplicateID = true;
 								}
 							}
 							type = tag;
 						} else { // Store level 1 and 2 information
-
+							if (!duplicateID) {
 							/* Get family information */
 							if (type.equals("FAM")) {
 								HashMap<String, Object> temp_fam = fam.get(fam_key); // Create hashmap for family
@@ -730,7 +741,7 @@ public class GEDCOMreader {
 
 								ind.put(ind_key, temp_ind); // Add individual to hashmap
 							}
-
+							}
 						}
 					}
 				}
